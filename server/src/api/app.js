@@ -13,7 +13,8 @@ import { notificacoesRouter } from './routes/notificacoes.js';
 import { demoRouter } from './routes/demo.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const publicDir = path.resolve(__dirname, '..', 'public');
+// O build do Vite (web/vite.config.js) gera os ficheiros em `server/public`.
+const publicDir = path.resolve(__dirname, '..', '..', 'public');
 
 export function criarApp() {
   const app = express();
