@@ -1,0 +1,7 @@
+# Normaliza as terminações de linha no repositório
+* text=auto eol=lf
+*.pptx binary
+*.pdf binary
+*.png binary
+*.jpg binary
+*.ico binary

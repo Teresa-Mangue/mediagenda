@@ -1,0 +1,24 @@
+# Dependências
+node_modules/
+
+# Variáveis de ambiente e segredos
+.env
+.env.*
+!.env.example
+
+# Base de dados SQLite (dados locais / demo)
+server/data/
+*.db
+*.db-shm
+*.db-wal
+
+# Emails gerados pelo outbox
+server/outbox/
+
+# Build do frontend (gerado por `npm run build`)
+server/public/
+
+# Logs e ficheiros de sistema
+*.log
+.DS_Store
+Thumbs.db

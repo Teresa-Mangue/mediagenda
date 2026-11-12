@@ -1,0 +1,22 @@
+# Blueprint do Render para o MediAgenda (plano Free).
+# Documentação: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: mediagenda
+    runtime: node
+    plan: free
+    region: frankfurt # região mais próxima de Moçambique
+    branch: main
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 24.14.0
+      - key: NODE_ENV
+        value: production
+      # Para persistir a base de dados entre deploys é preciso um disco
+      # (só disponível em planos pagos). Descomenta quando tiveres disco:
+      # - key: MEDIAGENDA_DB
+      #   value: /var/data/mediagenda.db
