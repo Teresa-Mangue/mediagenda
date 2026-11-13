@@ -9,6 +9,7 @@ import { consultasRouter } from './routes/consultas.js';
 import { medicoRouter } from './routes/medico.js';
 import { pacientesRouter } from './routes/pacientes.js';
 import { adminRouter } from './routes/admin.js';
+import { secretariaRouter } from './routes/secretaria.js';
 import { notificacoesRouter } from './routes/notificacoes.js';
 import { demoRouter } from './routes/demo.js';
 
@@ -32,6 +33,7 @@ export function criarApp() {
   app.use('/api/medico', medicoRouter);
   app.use('/api/pacientes', pacientesRouter);
   app.use('/api/admin', adminRouter);
+  app.use('/api/secretaria', secretariaRouter);
   app.use('/api/notificacoes', notificacoesRouter);
   app.use('/api/demo', demoRouter);
 

@@ -40,17 +40,17 @@ demoRouter.get('/arquitetura', exigirPerfil('admin'), (req, res) => {
       {
         nome: 'Factory Method',
         ficheiro: 'server/src/domain/notificacao/factory.js',
-        descricao: 'NotificacaoFactory.criar("email" | "sms") devolve a classe concreta sem expor a construção.'
+        descricao: 'NotificacaoFactory.criar("email" | "sms" | "whatsapp") devolve a classe concreta sem expor a construção.'
       },
       {
         nome: 'Strategy',
         ficheiro: 'server/src/domain/notificacao/estrategias.js',
-        descricao: 'A preferência do utilizador escolhe a estratégia de notificação; a especialidade escolhe a duração.'
+        descricao: 'A preferência do utilizador escolhe a estratégia (e-mail, SMS ou WhatsApp); a especialidade escolhe a duração.'
       },
       {
         nome: 'Adapter',
         ficheiro: 'server/src/domain/notificacao/canais.js',
-        descricao: 'AdapterSMTP e AdapterSMS isolam os fornecedores externos (simulados em outbox/).'
+        descricao: 'AdapterSMTP, AdapterSMS e AdapterWhatsApp isolam os fornecedores externos (simulados em outbox/). O WhatsApp foi acrescentado sem alterar nenhum serviço — prova de ISP + Adapter.'
       },
       {
         nome: 'Façade',

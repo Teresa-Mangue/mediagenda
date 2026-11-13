@@ -16,6 +16,7 @@ export function PainelAdmin() {
   const [medicos, setMedicos] = useState([]);
   const [especialidades, setEspecialidades] = useState([]);
   const [configuracoes, setConfiguracoes] = useState([]);
+  const [aprovacoes, setAprovacoes] = useState([]);
   const [filtros, setFiltros] = useState({ desde: '', ate: '', estado: '' });
   const [carregando, setCarregando] = useState(true);
   const [modalMedico, setModalMedico] = useState(false);
@@ -26,18 +27,20 @@ export function PainelAdmin() {
 
   const carregarBase = useCallback(async () => {
     try {
-      const [r, us, meds, esps, confs] = await Promise.all([
+      const [r, us, meds, esps, confs, pendentes] = await Promise.all([
         http.get('/admin/resumo'),
         http.get('/admin/utilizadores'),
         http.get('/medicos'),
         http.get('/especialidades'),
-        http.get('/admin/configuracoes')
+        http.get('/admin/configuracoes'),
+        http.get('/admin/aprovacoes')
       ]);
       setResumo(r);
       setUtilizadores(us);
       setMedicos(meds);
       setEspecialidades(esps);
       setConfiguracoes(confs);
+      setAprovacoes(pendentes);
     } catch (falha) {
       toast.erro(falha.message);
     } finally {
@@ -68,11 +71,13 @@ export function PainelAdmin() {
     if (filtros.estado) q.set('estado', filtros.estado);
     try {
       await descarregar(`/admin/relatorios/export.csv${q.toString() ? `?${q}` : ''}`, 'mediagenda-relatorio.csv');
-      toast.sucesso('CSV exportado.');
+      toast.sucesso('CSV exportado (abre directamente no Excel).');
     } catch (falha) {
       toast.erro(falha.message);
     }
   };
+
+  const imprimirPdf = () => window.print();
 
   const executarScheduler = async () => {
     try {
@@ -111,6 +116,18 @@ export function PainelAdmin() {
     try {
       const r = await http.patch(`/admin/medicos/${medico.id}/desativar`);
       toast.sucesso(`${r.consultasCanceladas} consulta(s) cancelada(s).`);
+      await carregarBase();
+    } catch (falha) {
+      toast.erro(falha.message);
+    }
+  };
+
+  const decidirAprovacao = async (utilizador, accao) => {
+    const verbo = accao === 'aprovar' ? 'aprovar' : 'recusar';
+    if (!window.confirm(`Confirma que pretende ${verbo} o cadastro de ${utilizador.nome} (${utilizador.perfil})?`)) return;
+    try {
+      const r = await http.post(`/admin/utilizadores/${utilizador.id}/${accao}`);
+      toast.sucesso(r.mensagem);
       await carregarBase();
     } catch (falha) {
       toast.erro(falha.message);
@@ -181,6 +198,7 @@ export function PainelAdmin() {
         {[
           { id: 'visao', label: 'Visão geral' },
           { id: 'relatorios', label: 'Relatórios' },
+          { id: 'aprovacoes', label: `Aprovações${aprovacoes.length ? ` (${aprovacoes.length})` : ''}` },
           { id: 'utilizadores', label: 'Utilizadores' },
           { id: 'config', label: 'Configuração' }
         ].map((a) => (
@@ -275,13 +293,26 @@ export function PainelAdmin() {
       )}
 
       {aba === 'relatorios' && (
-        <>
+        <div className="print-area">
+          <header className="so-imprimir print-head">
+            <h1>MediAgenda — Relatório de consultas</h1>
+            <p>
+              Gerado em {new Date().toLocaleString('pt-PT')}
+              {filtros.desde ? ` · desde ${filtros.desde}` : ''}
+              {filtros.ate ? ` · até ${filtros.ate}` : ''}
+              {filtros.estado ? ` · estado: ${filtros.estado}` : ''}
+            </p>
+          </header>
+
           <section className="card">
-            <div className="card-head">
-              <div><h2>Relatório de consultas</h2><p>Filtre, consulte e exporte para CSV (Excel).</p></div>
-              <button className="btn primary" onClick={exportar}>↓ Exportar CSV</button>
+            <div className="card-head nao-imprimir">
+              <div><h2>Relatório de consultas</h2><p>Filtre, consulte e exporte para Excel (CSV) ou PDF (impressão).</p></div>
+              <div className="row" style={{ gap: 8 }}>
+                <button className="btn" onClick={imprimirPdf}>🖨 PDF (Imprimir)</button>
+                <button className="btn primary" onClick={exportar}>↓ Excel (CSV)</button>
+              </div>
             </div>
-            <div className="grid c4">
+            <div className="grid c4 nao-imprimir">
               <Campo label="Desde"><input type="date" value={filtros.desde} onChange={(e) => setFiltros({ ...filtros, desde: e.target.value })} /></Campo>
               <Campo label="Até"><input type="date" value={filtros.ate} onChange={(e) => setFiltros({ ...filtros, ate: e.target.value })} /></Campo>
               <Campo label="Estado">
@@ -299,7 +330,7 @@ export function PainelAdmin() {
           <section className="card mt">
             <div className="row between">
               <h3>Linhas ({relatorio.consultas.length})</h3>
-              <small className="muted">Cache de relatórios v{relatorio.resumo?.versaoCache}</small>
+              <small className="muted nao-imprimir">Cache de relatórios v{relatorio.resumo?.versaoCache}</small>
             </div>
             {relatorio.consultas.length === 0 ? (
               <Vazio icone="📄" titulo="Sem resultados" texto="Ajuste os filtros." />
@@ -324,7 +355,74 @@ export function PainelAdmin() {
               </div>
             )}
           </section>
-        </>
+        </div>
+      )}
+
+      {aba === 'aprovacoes' && (
+        <div className="stack">
+          <section className="card">
+            <div className="card-head">
+              <div>
+                <h2>Aprovação de contas</h2>
+                <p>
+                  Médicos aguardam confirmação da secretária; secretárias aguardam autorização do
+                  administrador. Enquanto estiverem pendentes, as credenciais não funcionam.
+                </p>
+              </div>
+              <span className="badge pendente">{aprovacoes.length} pendente(s)</span>
+            </div>
+            {aprovacoes.length === 0 ? (
+              <Vazio icone="✅" titulo="Sem contas pendentes" texto="Todos os cadastros foram avaliados." />
+            ) : (
+              <div className="table-wrap">
+                <table>
+                  <thead><tr><th>Nome</th><th>Perfil</th><th>E-mail</th><th>Registo / Localização</th><th>Criado</th><th></th></tr></thead>
+                  <tbody>
+                    {aprovacoes.map((u) => (
+                      <tr key={u.id}>
+                        <td><b style={{ fontSize: '.86rem' }}>{u.nome}</b></td>
+                        <td><span className="badge neutral">{u.perfil}</span></td>
+                        <td className="tiny">{u.email}</td>
+                        <td className="tiny">
+                          {u.perfil === 'medico'
+                            ? `${u.numero_registo || '—'} · ${u.localizacao || '—'}`
+                            : '—'}
+                        </td>
+                        <td className="tiny">{formatarDataHora(u.criado_em)}</td>
+                        <td className="right">
+                          <div className="row" style={{ gap: 6, justifyContent: 'flex-end' }}>
+                            <button className="btn sm primary" onClick={() => decidirAprovacao(u, 'aprovar')}>Aprovar</button>
+                            <button className="btn sm danger" onClick={() => decidirAprovacao(u, 'recusar')}>Recusar</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+
+          <section className="card">
+            <h3>Regra de negócio aplicada</h3>
+            <div className="grid c2 mt-sm">
+              <div className="alert info">
+                <b>Médico → Secretária</b>
+                <p className="tiny" style={{ margin: '6px 0 0' }}>
+                  O cadastro público fica com <code>estado_aprovacao = 'pendente'</code> e
+                  <code> ativo = 0</code>. A secretária aprova e só então o login é aceite.
+                </p>
+              </div>
+              <div className="alert warn">
+                <b>Secretária → Administrador</b>
+                <p className="tiny" style={{ margin: '6px 0 0' }}>
+                  A autorização é exclusiva do administrador. A secretária não pode aprovar
+                  outras secretárias (verificado no servidor, não só na interface).
+                </p>
+              </div>
+            </div>
+          </section>
+        </div>
       )}
 
       {aba === 'utilizadores' && (
@@ -361,13 +459,18 @@ export function PainelAdmin() {
             <h2>Utilizadores ({utilizadores.length})</h2>
             <div className="table-wrap mt-sm">
               <table>
-                <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Estado</th><th>Criado</th></tr></thead>
+                <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Aprovação</th><th>Estado</th><th>Criado</th></tr></thead>
                 <tbody>
                   {utilizadores.map((u) => (
                     <tr key={u.id}>
                       <td>{u.nome}</td>
                       <td className="tiny">{u.email}</td>
                       <td><span className="badge neutral">{u.perfil}</span></td>
+                      <td>
+                        <span className={`badge ${u.estado_aprovacao === 'aprovada' ? 'confirmada' : u.estado_aprovacao === 'pendente' ? 'pendente' : 'cancelada'}`}>
+                          {u.estado_aprovacao || 'aprovada'}
+                        </span>
+                      </td>
                       <td><span className={`badge ${u.ativo ? 'confirmada' : 'cancelada'}`}>{u.ativo ? 'activo' : 'inactivo'}</span></td>
                       <td className="tiny">{formatarDataHora(u.criado_em)}</td>
                     </tr>

@@ -6,6 +6,7 @@ import { chaveData, formatarDataHora } from '../utils.js';
 
 const ABAS = [
   { id: 'padroes', label: 'Padrões implementados' },
+  { id: 'comparacao', label: 'Sem padrões vs. Com padrões' },
   { id: 'simulador', label: 'Simulador da cadeia' },
   { id: 'eventos', label: 'Event Monitor' },
   { id: 'trace', label: 'Trace & Outbox' }
@@ -16,6 +17,14 @@ function amanhaAs10() {
   d.setDate(d.getDate() + 1);
   d.setHours(10, 0, 0, 0);
   return { data: chaveData(d), hora: '10:00' };
+}
+
+function diaUtilFuturo(dias) {
+  const d = new Date();
+  d.setDate(d.getDate() + dias);
+  d.setHours(0, 0, 0, 0);
+  while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1);
+  return d;
 }
 
 export function Arquitetura() {
@@ -35,6 +44,7 @@ export function Arquitetura() {
   const [simulando, setSimulando] = useState(false);
   const [resultado, setResultado] = useState(null);
   const [traceDetalhe, setTraceDetalhe] = useState(null);
+  const diaCheio = useMemo(() => diaUtilFuturo(5), []);
 
   const carregar = useCallback(async () => {
     try {
@@ -54,7 +64,7 @@ export function Arquitetura() {
       setPacientes(pacs);
       setMedicos(meds);
       if (meds.length) {
-        const primeiro = meds[0];
+        const primeiro = meds[1] || meds[0];
         setSim((s) => ({
           ...s,
           medicoId: s.medicoId || String(primeiro.id),
@@ -75,6 +85,23 @@ export function Arquitetura() {
     () => medicos.find((m) => Number(m.id) === Number(sim.medicoId)) || null,
     [medicos, sim.medicoId]
   );
+
+  const prepararCasoRn03 = () => {
+    const antonio = medicos.find((m) => m.nome.includes('António'));
+    const maria = pacientes.find((p) => p.nome.includes('Maria')) || pacientes[0];
+    if (!antonio) return;
+    const cardiologia = antonio.especialidades.find((e) => e.nome === 'Cardiologia')
+      || antonio.especialidades[0];
+    setSim({
+      medicoId: String(antonio.id),
+      especialidadeId: String(cardiologia.id),
+      pacienteId: String(maria?.id ?? ''),
+      data: chaveData(diaCheio),
+      hora: '18:00'
+    });
+    setResultado(null);
+    toast.info('Caso RN-03 preparado. Execute a cadeia para ver o limite diário a travar a marcação.');
+  };
 
   const simular = async () => {
     setSimulando(true);
@@ -224,6 +251,51 @@ export function Arquitetura() {
         </div>
       )}
 
+      {aba === 'comparacao' && (
+        <div className="stack">
+          <section className="card">
+            <div className="card-head">
+              <div>
+                <h2>Sem padrões vs. Com padrões</h2>
+                <p>Como seria o MediAgenda se tudo estivesse numa única classe — e como fica com as decisões tomadas.</p>
+              </div>
+              <span className="badge info">valor técnico das decisões</span>
+            </div>
+            <div className="grid c2">
+              <div className="comp lado-sem">
+                <h3>❌ Sem padrões — "DeusAgendaService"</h3>
+                <p className="tiny muted">Uma única classe com todas as responsabilidades concentradas.</p>
+                <ul className="comp-lista">
+                  <li><b>Marcação:</b> uma classe recebe o pedido, valida as 5 regras, grava, envia e-mails, calcula relatórios e escreve auditoria — tudo em <code>marcar()</code>.</li>
+                  <li><b>Estados:</b> <code>if (estado === 'pendente')…</code> espalhados; adicionar um estado obriga a caçar todos os <code>if</code>.</li>
+                  <li><b>Regras:</b> RN-01…RN-09 em blocos de validação enormes, impossíveis de testar isoladamente.</li>
+                  <li><b>Novo canal:</b> suportar WhatsApp exige <b>editar</b> a mesma classe (risco de partir marcação, auditoria e relatórios).</li>
+                  <li><b>Testes:</b> para testar uma regra é preciso simular base de dados, e-mail, SMS e relatórios em conjunto.</li>
+                  <li><b>Configuração:</b> constantes mágicas repetidas (24h, 2h, 10/dia) em cada ficheiro.</li>
+                </ul>
+              </div>
+              <div className="comp lado-com">
+                <h3>✅ Com padrões — MediAgenda actual</h3>
+                <p className="tiny muted">Monólito modular; cada padrão resolve uma das dores acima.</p>
+                <ul className="comp-lista">
+                  <li><b>Marcação:</b> a Façade orquestra; a <b>Chain</b> valida (RN-01→RN-06 com <code>detalhes.passos</code>), o <b>Command</b> grava, o <b>Event Bus</b> distribui — cada passo demonstrável no Trace.</li>
+                  <li><b>Estados:</b> padrão <b>State</b> — transições válidas declaradas num sítio só; uma consulta cancelada não pode ser confirmada.</li>
+                  <li><b>Regras:</b> cada elo da cadeia é um objecto pequeno, testável isoladamente (38 testes, incl. RN-03 no simulador).</li>
+                  <li><b>Novo canal:</b> <b>ISP + Adapter + Factory</b> — o canal <b>WhatsApp foi acrescentado sem alterar nenhum serviço</b> (nova interface + adapter; o <code>ConsultaService</code> continua intocado).</li>
+                  <li><b>Testes:</b> notificações, regras e estados testam-se com adapters simulados no outbox temporário.</li>
+                  <li><b>Configuração:</b> <b>Singleton</b> lê tudo uma vez (RN-01, RN-03, RN-09, limites de login) e partilha por todos os serviços.</li>
+                </ul>
+              </div>
+            </div>
+            <div className="alert info mt">
+              Prova concreta: abra o <strong>Event Monitor</strong> e o <strong>Trace &amp; Outbox</strong> — cada marcação
+              mostra a cadeia a executar, o evento a circular e os 3 consumidores independentes. O canal WhatsApp
+              no seu perfil (Perfil → Notificações) demonstra extensibilidade real.
+            </div>
+          </section>
+        </div>
+      )}
+
       {aba === 'simulador' && (
         <div className="split">
           <section className="card">
@@ -273,8 +345,15 @@ export function Arquitetura() {
             </div>
 
             <div className="alert info mt">
-              Sugestão: o Dr. António Nhampossa tem um dia completo a +5 dias. Marque nesse dia para ver a
-              RN-03 a interromper a cadeia. Os restantes elos aparecem como aprovados.
+              <div className="row" style={{ justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                <span>
+                  Sugestão: em <strong>{diaCheio.toLocaleDateString('pt-PT')}</strong> o Dr. António Nhampossa
+                  tem 8 consultas (o seu limite diário) e o horário das 18:00 ainda está livre. Execute a
+                  cadeia nesse horário para ver a RN-03 a recusar a marcação. Os restantes elos aparecem
+                  como aprovados.
+                </span>
+                <button className="btn ghost sm" onClick={prepararCasoRn03}>Preparar caso RN-03</button>
+              </div>
             </div>
           </section>
 

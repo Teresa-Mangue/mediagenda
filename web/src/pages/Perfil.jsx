@@ -64,6 +64,7 @@ export function Perfil() {
               <select value={form.preferenciaNotificacao} onChange={atualizarCampo('preferenciaNotificacao')}>
                 <option value="email">E-mail</option>
                 <option value="sms">SMS</option>
+                <option value="whatsapp">WhatsApp</option>
                 <option value="ambos">E-mail e SMS</option>
               </select>
             </Campo>

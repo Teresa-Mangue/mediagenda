@@ -24,18 +24,23 @@ export class ConsultaRepository {
     const resultado = db.prepare(`
       INSERT INTO consultas
         (paciente_id, medico_id, especialidade_id, data_hora, duracao_min, estado,
-         prazo_confirmacao, criada_em, atualizada_em, criada_por)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         prazo_confirmacao, token_confirmacao, criada_em, atualizada_em, criada_por)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       dados.pacienteId, dados.medicoId, dados.especialidadeId, dados.dataHora,
       dados.duracaoMin, dados.estado || 'pendente', dados.prazoConfirmacao,
-      agora, agora, dados.criadaPor ?? null
+      dados.tokenConfirmacao ?? null, agora, agora, dados.criadaPor ?? null
     );
     return Number(resultado.lastInsertRowid);
   }
 
   porId(id) {
     return db.prepare(`${BASE} WHERE c.id = ?`).get(Number(id));
+  }
+
+  /** Confirmação por link de e-mail — o token tem de coincidir com a consulta. */
+  porIdEToken(id, token) {
+    return db.prepare(`${BASE} WHERE c.id = ? AND c.token_confirmacao = ?`).get(Number(id), String(token)) || null;
   }
 
   listarPorPaciente(pacienteId, { estado, desde, ate } = {}) {
@@ -78,8 +83,8 @@ export class ConsultaRepository {
       WHERE c.medico_id = ?
         AND c.id <> ?
         AND c.estado IN ('pendente', 'confirmada')
-        AND c.data_hora < ?
-        AND datetime(c.data_hora, '+' || c.duracao_min || ' minutes') > ?
+        AND julianday(c.data_hora) < julianday(?)
+        AND julianday(c.data_hora, '+' || c.duracao_min || ' minutes') > julianday(?)
       LIMIT 1
     `).get(Number(medicoId), Number(excluirId), fimIso, inicioIso);
   }
@@ -106,7 +111,7 @@ export class ConsultaRepository {
   atualizar(id, campos) {
     const permitidos = [
       'data_hora', 'duracao_min', 'estado', 'motivo_cancelamento', 'cancelamento_tardio',
-      'confirmada_em', 'prazo_confirmacao', 'especialidade_id', 'medico_id'
+      'confirmada_em', 'prazo_confirmacao', 'token_confirmacao', 'especialidade_id', 'medico_id'
     ];
     const set = [];
     const params = [];

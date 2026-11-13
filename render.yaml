@@ -1,11 +1,16 @@
 # Blueprint do Render para o MediAgenda (plano Free).
 # Documentação: https://render.com/docs/blueprint-spec
+#
+# O serviço já existe e está publicado em https://mediagenda-0za9.onrender.com
+# (criado a partir deste repositório, região Oregon). Este ficheiro serve de
+# referência: recriar o serviço com um Blueprint criaria uma segunda instância,
+# porque o nome "mediagenda" já está em uso.
 services:
   - type: web
     name: mediagenda
     runtime: node
     plan: free
-    region: frankfurt # região mais próxima de Moçambique
+    region: oregon
     branch: main
     buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start

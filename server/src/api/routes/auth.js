@@ -7,9 +7,14 @@ export const authRouter = Router();
 
 authRouter.post('/registo', assincrono(async (req, res) => {
   const resultado = await servicos.authService.registar(req.body || {});
+  const pendente = resultado.estadoAprovacao === 'pendente';
   res.status(201).json({
     ...resultado,
-    mensagem: 'Conta criada. Confirme o e-mail para activar todas as funcionalidades.',
+    mensagem: pendente
+      ? `Conta criada. O cadastro de ${resultado.utilizador.perfil} está pendente de aprovação `
+        + `(${resultado.utilizador.perfil === 'medico' ? 'secretária' : 'administrador'}). `
+        + 'Confirme também o e-mail através do link enviado.'
+      : 'Conta criada. Confirme o e-mail para activar todas as funcionalidades.',
     linkConfirmacao: `/confirmar-email?token=${resultado.tokenConfirmacao}`
   });
 }));

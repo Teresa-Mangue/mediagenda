@@ -78,6 +78,8 @@ export class RelatorioService {
       medicosAtivos: Number(db.prepare('SELECT COUNT(*) AS t FROM medicos WHERE ativo = 1').get().t),
       pacientesRegistados: Number(db.prepare("SELECT COUNT(*) AS t FROM pacientes p JOIN users u ON u.id = p.utilizador_id WHERE u.ativo = 1").get().t),
       cancelamentosTardios: Number(db.prepare('SELECT COUNT(*) AS t FROM consultas WHERE cancelamento_tardio = 1').get().t),
+      aprovacoesPendentes: Number(db.prepare("SELECT COUNT(*) AS t FROM users WHERE estado_aprovacao = 'pendente'").get().t),
+      cidades: Number(db.prepare("SELECT COUNT(DISTINCT localizacao) AS t FROM medicos WHERE ativo = 1 AND localizacao IS NOT NULL").get().t),
       versaoCache: this.#versao
     };
   }

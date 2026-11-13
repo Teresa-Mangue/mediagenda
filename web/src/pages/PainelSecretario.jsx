@@ -11,21 +11,35 @@ export function PainelSecretario() {
   const [aba, setAba] = useState('pacientes');
   const [pacientes, setPacientes] = useState([]);
   const [consultas, setConsultas] = useState([]);
+  const [medicos, setMedicos] = useState([]);
+  const [aprovacoes, setAprovacoes] = useState([]);
+  const [especialidades, setEspecialidades] = useState([]);
   const [pesquisa, setPesquisa] = useState('');
   const [carregando, setCarregando] = useState(true);
   const [modalNovo, setModalNovo] = useState(false);
+  const [modalMedico, setModalMedico] = useState(false);
   const [detalhe, setDetalhe] = useState(null);
   const [form, setForm] = useState({ nome: '', email: '', telefone: '', dataNascimento: '', endereco: '', password: '' });
+  const [novoMedico, setNovoMedico] = useState({
+    nome: '', email: '', telefone: '', numeroRegisto: '',
+    localizacao: 'Clínica MediAgenda — Maputo', password: '', especialidades: []
+  });
   const [aGuardar, setAGuardar] = useState(false);
 
   const carregar = useCallback(async () => {
     try {
-      const [lista, todas] = await Promise.all([
+      const [lista, todas, meds, pendentes, esps] = await Promise.all([
         http.get('/pacientes'),
-        http.get('/consultas/minhas')
+        http.get('/consultas/minhas'),
+        http.get('/secretaria/medicos'),
+        http.get('/secretaria/aprovacoes'),
+        http.get('/especialidades')
       ]);
       setPacientes(lista);
       setConsultas(todas);
+      setMedicos(meds);
+      setAprovacoes(pendentes);
+      setEspecialidades(esps);
     } catch (falha) {
       toast.erro(falha.message);
     } finally {
@@ -85,6 +99,42 @@ export function PainelSecretario() {
     }
   };
 
+  const criarMedico = async () => {
+    setAGuardar(true);
+    try {
+      const r = await http.post('/secretaria/medicos', {
+        ...novoMedico,
+        password: novoMedico.password || undefined,
+        especialidades: especialidades
+          .filter((e) => novoMedico.especialidades.includes(e.nome))
+          .map((e) => e.nome)
+      });
+      toast.sucesso(r.mensagem || 'Médico registado.');
+      setModalMedico(false);
+      setNovoMedico({
+        nome: '', email: '', telefone: '', numeroRegisto: '',
+        localizacao: 'Clínica MediAgenda — Maputo', password: '', especialidades: []
+      });
+      await carregar();
+    } catch (falha) {
+      toast.erro(falha.message);
+    } finally {
+      setAGuardar(false);
+    }
+  };
+
+  const decidirAprovacao = async (utilizador, accao) => {
+    const etiqueta = accao === 'aprovar' ? 'aprovar' : 'recusar';
+    if (!window.confirm(`Confirma que pretende ${etiqueta} o cadastro de ${utilizador.nome}?`)) return;
+    try {
+      const r = await http.post(`/secretaria/aprovacoes/${utilizador.id}/${accao}`);
+      toast.sucesso(r.mensagem);
+      await carregar();
+    } catch (falha) {
+      toast.erro(falha.message);
+    }
+  };
+
   if (carregando) return <div className="spinner" />;
 
   return (
@@ -119,15 +169,19 @@ export function PainelSecretario() {
         </div>
         <div className="card pad-sm">
           <div className="kpi">
-            <span className="label">Total consultas</span>
-            <span className="value">{consultas.length}</span>
-            <span className="hint">histórico completo</span>
+            <span className="label">Médicos activos</span>
+            <span className="value">{medicos.length}</span>
+            <span className="hint">{aprovacoes.length} cadastro(s) por aprovar</span>
           </div>
         </div>
       </div>
 
       <div className="tabs mt">
-        {[{ id: 'pacientes', label: 'Pacientes' }, { id: 'dia', label: 'Consultas de hoje' }].map((a) => (
+        {[
+          { id: 'pacientes', label: 'Pacientes' },
+          { id: 'dia', label: 'Consultas de hoje' },
+          { id: 'medicos', label: `Médicos & aprovações${aprovacoes.length ? ` (${aprovacoes.length})` : ''}` }
+        ].map((a) => (
           <button key={a.id} className={`tab ${aba === a.id ? 'active' : ''}`} onClick={() => setAba(a.id)}>{a.label}</button>
         ))}
       </div>
@@ -204,6 +258,73 @@ export function PainelSecretario() {
         )
       )}
 
+      {aba === 'medicos' && (
+        <div className="stack">
+          <section className="card">
+            <div className="card-head">
+              <div>
+                <h2>Cadastros de médicos por aprovar</h2>
+                <p>Só entram em vigor depois da confirmação da secretaria (regra do trabalho).</p>
+              </div>
+              <span className="badge pendente">{aprovacoes.length} pendente(s)</span>
+            </div>
+            {aprovacoes.length === 0 ? (
+              <Vazio icone="✅" titulo="Sem cadastros pendentes" texto="Todos os médicos que se registaram já foram avaliados." />
+            ) : (
+              <div className="table-wrap">
+                <table>
+                  <thead><tr><th>Médico</th><th>Registo</th><th>Localização</th><th>E-mail</th><th></th></tr></thead>
+                  <tbody>
+                    {aprovacoes.map((u) => (
+                      <tr key={u.id}>
+                        <td><b style={{ fontSize: '.86rem' }}>{u.nome}</b></td>
+                        <td className="mono tiny">{u.numero_registo || '—'}</td>
+                        <td className="tiny">{u.localizacao || '—'}</td>
+                        <td className="tiny">{u.email}</td>
+                        <td className="right">
+                          <div className="row" style={{ gap: 6, justifyContent: 'flex-end' }}>
+                            <button className="btn sm primary" onClick={() => decidirAprovacao(u, 'aprovar')}>Aprovar</button>
+                            <button className="btn sm danger" onClick={() => decidirAprovacao(u, 'recusar')}>Recusar</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+
+          <section className="card">
+            <div className="card-head">
+              <div>
+                <h2>Médicos activos ({medicos.length})</h2>
+                <p>A secretaria também pode criar médicos directamente — a conta fica logo aprovada.</p>
+              </div>
+              <button className="btn primary" onClick={() => setModalMedico(true)}>+ Novo médico</button>
+            </div>
+            <div className="table-wrap">
+              <table>
+                <thead><tr><th>Médico</th><th>Registo</th><th>Localização</th><th>Especialidades</th></tr></thead>
+                <tbody>
+                  {medicos.map((m) => (
+                    <tr key={m.id}>
+                      <td>
+                        <b style={{ fontSize: '.86rem' }}>{m.nome}</b>
+                        <div className="tiny muted">{m.email}</div>
+                      </td>
+                      <td className="mono tiny">{m.numero_registo}</td>
+                      <td className="tiny">{m.localizacao}</td>
+                      <td className="tiny">{m.especialidades.map((e) => e.nome).join(', ')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      )}
+
       {modalNovo && (
         <Modal titulo="Novo paciente" subtitulo="A conta fica activa com uma palavra-passe inicial." onFechar={() => setModalNovo(false)}>
           <div className="stack">
@@ -234,6 +355,59 @@ export function PainelSecretario() {
             <button className="btn ghost" onClick={() => setModalNovo(false)}>Cancelar</button>
             <button className="btn primary" onClick={criarPaciente} disabled={aGuardar || !form.nome || !form.email}>
               {aGuardar ? 'A registar…' : 'Registar paciente'}
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {modalMedico && (
+        <Modal wide titulo="Novo médico" subtitulo="Criado pela secretaria: conta aprovada e activa de imediato."
+          onFechar={() => setModalMedico(false)}>
+          <div className="grid c2">
+            <Campo label="Nome completo">
+              <input value={novoMedico.nome} onChange={(e) => setNovoMedico({ ...novoMedico, nome: e.target.value })} />
+            </Campo>
+            <Campo label="E-mail">
+              <input type="email" value={novoMedico.email} onChange={(e) => setNovoMedico({ ...novoMedico, email: e.target.value })} />
+            </Campo>
+            <Campo label="Nº de registo (Ordem dos Médicos)">
+              <input value={novoMedico.numeroRegisto} onChange={(e) => setNovoMedico({ ...novoMedico, numeroRegisto: e.target.value })} />
+            </Campo>
+            <Campo label="Telefone">
+              <input value={novoMedico.telefone} onChange={(e) => setNovoMedico({ ...novoMedico, telefone: e.target.value })} />
+            </Campo>
+            <Campo label="Clínica / cidade">
+              <select value={novoMedico.localizacao} onChange={(e) => setNovoMedico({ ...novoMedico, localizacao: e.target.value })}>
+                {['Maputo', 'Matola', 'Beira', 'Nampula', 'Quelimane', 'Tete', 'Chimoio', 'Pemba'].map((cidade) => (
+                  <option key={cidade} value={`Clínica MediAgenda — ${cidade}`}>{cidade}</option>
+                ))}
+              </select>
+            </Campo>
+            <Campo label="Palavra-passe inicial" hint="Padrão: Medico@123">
+              <input value={novoMedico.password} onChange={(e) => setNovoMedico({ ...novoMedico, password: e.target.value })} />
+            </Campo>
+          </div>
+          <Campo label="Especialidades">
+            <div className="row wrap">
+              {especialidades.map((e) => (
+                <label key={e.id} className="check badge neutral" style={{ cursor: 'pointer' }}>
+                  <input type="checkbox" checked={novoMedico.especialidades.includes(e.nome)}
+                    onChange={() => setNovoMedico((m) => ({
+                      ...m,
+                      especialidades: m.especialidades.includes(e.nome)
+                        ? m.especialidades.filter((x) => x !== e.nome)
+                        : [...m.especialidades, e.nome]
+                    }))} />
+                  {e.nome}
+                </label>
+              ))}
+            </div>
+          </Campo>
+          <div className="row between mt">
+            <button className="btn ghost" onClick={() => setModalMedico(false)}>Cancelar</button>
+            <button className="btn primary" onClick={criarMedico}
+              disabled={aGuardar || !novoMedico.nome || !novoMedico.email || !novoMedico.numeroRegisto}>
+              {aGuardar ? 'A criar…' : 'Criar médico'}
             </button>
           </div>
         </Modal>

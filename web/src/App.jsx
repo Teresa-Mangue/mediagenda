@@ -3,6 +3,8 @@ import { RotaProtegida } from './components/Layout.jsx';
 import { Login } from './pages/Login.jsx';
 import { Registo } from './pages/Registo.jsx';
 import { Redefinir } from './pages/Redefinir.jsx';
+import { ConfirmarEmail } from './pages/ConfirmarEmail.jsx';
+import { ConfirmarConsulta } from './pages/ConfirmarConsulta.jsx';
 import { Inicio } from './pages/Inicio.jsx';
 import { MedicoDetalhe } from './pages/MedicoDetalhe.jsx';
 import { MinhasConsultas } from './pages/MinhasConsultas.jsx';
@@ -21,6 +23,8 @@ export function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/registo" element={<Registo />} />
       <Route path="/redefinir" element={<Redefinir />} />
+      <Route path="/confirmar-email" element={<ConfirmarEmail />} />
+      <Route path="/confirmar-consulta" element={<ConfirmarConsulta />} />
 
       <Route path="/" element={<RotaProtegida><Inicio /></RotaProtegida>} />
       <Route path="/medicos/:id" element={<RotaProtegida><MedicoDetalhe /></RotaProtegida>} />

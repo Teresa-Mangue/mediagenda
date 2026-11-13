@@ -72,20 +72,24 @@ export class MedicoRepository {
     `).all(Number(medicoId));
   }
 
-  criar({ utilizadorId, numeroRegisto, localizacao, biografia, duracaoConsultaMin, maxConsultasDia, especialidades = [] }) {
+  criar({ utilizadorId, numeroRegisto, localizacao, biografia, duracaoConsultaMin, maxConsultasDia, especialidades = [], ativo = 1 }) {
     const resultado = db.prepare(`
       INSERT INTO medicos
-        (utilizador_id, numero_registo, localizacao, biografia, duracao_consulta_min, max_consultas_dia, criado_em)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+        (utilizador_id, numero_registo, localizacao, biografia, duracao_consulta_min, max_consultas_dia, ativo, criado_em)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       Number(utilizadorId), numeroRegisto, localizacao ?? null, biografia ?? null,
-      Number(duracaoConsultaMin) || 60, Number(maxConsultasDia) || 10, nowIso()
+      Number(duracaoConsultaMin) || 60, Number(maxConsultasDia) || 10, ativo ? 1 : 0, nowIso()
     );
     const id = Number(resultado.lastInsertRowid);
     for (const especialidadeId of especialidades) {
       this.adicionarEspecialidade(id, especialidadeId);
     }
     return id;
+  }
+
+  definirAtivo(medicoId, ativo) {
+    db.prepare('UPDATE medicos SET ativo = ? WHERE id = ?').run(ativo ? 1 : 0, Number(medicoId));
   }
 
   adicionarEspecialidade(medicoId, especialidadeId) {

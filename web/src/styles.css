@@ -424,3 +424,41 @@ tbody tr:hover { background: color-mix(in srgb, var(--primary) 4%, transparent);
   .modal { padding: 18px; }
   .slots { grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); }
 }
+
+/* --- Exportação PDF (impressão do relatório) ----------------------------- */
+.so-imprimir { display: none; }
+
+@media print {
+  body * { visibility: hidden; }
+  .print-area, .print-area * { visibility: visible; }
+  .print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0;
+  }
+  .print-area .card {
+    box-shadow: none;
+    border: none;
+    padding: 0;
+    background: #fff;
+  }
+  .nao-imprimir { display: none !important; }
+  .so-imprimir { display: block; }
+  .print-head { margin-bottom: 12px; border-bottom: 2px solid #0f172a; padding-bottom: 8px; }
+  .print-head h1 { font-size: 16pt; margin: 0 0 4px; color: #0f172a; }
+  .print-head p { margin: 0; font-size: 9pt; color: #475569; }
+  .table-wrap { overflow: visible; max-height: none; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid #94a3b8; padding: 4px 8px; font-size: 9.5pt; color: #0f172a; }
+  th { background: #e2e8f0; }
+  .badge { border: 1px solid #94a3b8; padding: 1px 6px; font-size: 8.5pt; }
+}
+
+/* --- Comparação "Sem padrões vs. Com padrões" ----------------------------- */
+.comp { border: 1px solid var(--borda, #e2e8f0); border-radius: 14px; padding: 18px; }
+.comp.lado-sem { background: rgba(244, 63, 94, 0.06); border-color: rgba(244, 63, 94, 0.35); }
+.comp.lado-com { background: rgba(16, 185, 129, 0.06); border-color: rgba(16, 185, 129, 0.35); }
+.comp-lista { margin: 10px 0 0; padding-left: 18px; display: grid; gap: 10px; font-size: 0.85rem; }
+.comp-lista code { font-size: 0.78rem; }

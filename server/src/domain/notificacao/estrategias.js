@@ -25,10 +25,15 @@ export class EstrategiaAmbos extends EstrategiaNotificacao {
   constructor() { super('ambos', ['email', 'sms']); }
 }
 
+export class EstrategiaWhatsApp extends EstrategiaNotificacao {
+  constructor() { super('whatsapp', ['whatsapp']); }
+}
+
 const ESTRATEGIAS = {
   email: new EstrategiaEmail(),
   sms: new EstrategiaSMS(),
-  ambos: new EstrategiaAmbos()
+  ambos: new EstrategiaAmbos(),
+  whatsapp: new EstrategiaWhatsApp()
 };
 
 export function obterEstrategiaNotificacao(preferencia) {

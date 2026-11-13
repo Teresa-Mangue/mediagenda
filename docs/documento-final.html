@@ -1,0 +1,1222 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8" />
+<title>MediAgenda — Documentação Técnica e Guia de Defesa</title>
+<style>
+  :root {
+    --azul: #0f3b57;
+    --azul-claro: #17638c;
+    --teal: #0e8f86;
+    --cinza: #5b6b78;
+    --linha: #d7e2e9;
+    --fundo: #f4f8fa;
+  }
+  * { box-sizing: border-box; }
+  html { font-size: 10.5pt; }
+  body {
+    margin: 0;
+    color: #1d2b36;
+    font-family: "Segoe UI", "Calibri", "Arial", sans-serif;
+    line-height: 1.5;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  a { color: var(--azul-claro); text-decoration: none; }
+  p { margin: 0 0 .55em; }
+  strong { color: #12232f; }
+  code {
+    font-family: "Cascadia Mono", "Consolas", monospace;
+    font-size: .88em;
+    background: #eef4f8;
+    border: 1px solid #dbe7ee;
+    border-radius: 3px;
+    padding: .05em .3em;
+  }
+  pre {
+    background: #f4f8fa;
+    border: 1px solid var(--linha);
+    border-left: 4px solid var(--teal);
+    border-radius: 4px;
+    padding: 10px 12px;
+    margin: .7em 0 1em;
+    font-size: 8.3pt;
+    line-height: 1.42;
+    white-space: pre-wrap;
+    word-break: break-word;
+    break-inside: avoid;
+  }
+  pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: .6em 0 1em;
+    font-size: 8.9pt;
+  }
+  thead { display: table-header-group; }
+  tr { break-inside: avoid; }
+  th, td {
+    border: 1px solid var(--linha);
+    padding: 5px 7px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: #e8f1f6; color: var(--azul); font-weight: 600; }
+  tbody tr:nth-child(even) td { background: #fbfdfe; }
+  blockquote {
+    margin: .7em 0 1em;
+    padding: 8px 12px;
+    border-left: 4px solid #f0b429;
+    background: #fffaf0;
+    color: #4a3b17;
+    border-radius: 0 4px 4px 0;
+    break-inside: avoid;
+  }
+  blockquote p:last-child { margin-bottom: 0; }
+  ul, ol { margin: .3em 0 .8em 1.25em; padding: 0; }
+  li { margin: .12em 0; }
+  hr { border: 0; border-top: 1px solid var(--linha); margin: 1.2em 0; }
+
+  h1, h2, h3, h4 { color: var(--azul); line-height: 1.25; }
+  h1 { font-size: 22pt; margin: 0 0 .4em; }
+  h2 {
+    font-size: 16pt;
+    margin: 0 0 .55em;
+    padding-bottom: .28em;
+    border-bottom: 2px solid var(--teal);
+    break-before: page;
+  }
+  h3 { font-size: 12.1pt; margin: 1.1em 0 .35em; break-after: avoid; }
+  h4 { font-size: 10.8pt; margin: .9em 0 .3em; break-after: avoid; }
+
+  /* Capa */
+  .capa {
+    height: 247mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    break-after: page;
+  }
+  .capa-topo { border-top: 7px solid var(--teal); padding-top: 12mm; }
+  .instituicao {
+    color: var(--cinza);
+    font-size: 9.6pt;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    line-height: 1.7;
+    margin-bottom: 34mm;
+  }
+  .marca { display: flex; align-items: center; gap: 10px; margin-bottom: 8mm; }
+  .marca-sinal {
+    width: 20mm; height: 20mm;
+    background: var(--azul);
+    color: #fff;
+    border-radius: 6mm;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26pt; font-weight: 700;
+  }
+  .marca-nome { font-size: 38pt; font-weight: 700; color: var(--azul); letter-spacing: -.02em; }
+  .subtitulo { font-size: 15pt; color: var(--teal); font-weight: 600; margin: 0 0 3mm; }
+  .tipo { font-size: 10.5pt; color: var(--cinza); letter-spacing: .16em; text-transform: uppercase; }
+  .capa-rodape { border-top: 1px solid var(--linha); padding-top: 8mm; }
+  .alunos { width: 100%; border: 0; margin: 0 0 6mm; font-size: 9.6pt; }
+  .alunos td { border: 0; padding: 2px 0; background: none !important; }
+  .alunos .num { text-align: right; color: var(--cinza); font-family: "Cascadia Mono", monospace; }
+  .docente { font-size: 9.6pt; color: #334; margin: 0 0 2mm; }
+  .local { font-size: 9pt; color: var(--cinza); letter-spacing: .1em; text-transform: uppercase; }
+
+  /* Sumário */
+  .sumario h1 { font-size: 18pt; border-bottom: 2px solid var(--teal); padding-bottom: .3em; }
+  .sumario ol { columns: 2; column-gap: 14mm; margin-top: 8mm; font-size: 9.8pt; }
+  .sumario li { margin: 0 0 .55em; break-inside: avoid; color: #263844; }
+  .nota {
+    margin-top: 10mm;
+    padding: 9px 12px;
+    background: var(--fundo);
+    border: 1px solid var(--linha);
+    border-radius: 4px;
+    font-size: 8.8pt;
+    color: var(--cinza);
+  }
+  .evitar-quebra { break-inside: avoid; }
+  main { break-before: page; }
+  main > h2:first-of-type { break-before: auto; }
+  @page { size: A4; margin: 19mm 17mm 18mm; }
+</style>
+</head>
+<body>
+
+<section class="capa">
+  <div class="capa-topo">
+    <div class="instituicao">
+      Divisão de Engenharia<br />
+      Curso de Engenharia Informática · 3.º Ano · Nocturno
+    </div>
+    <div class="marca">
+      <div class="marca-sinal">+</div>
+      <div class="marca-nome">MediAgenda</div>
+    </div>
+    <p class="subtitulo">Sistema de Marcação e Gestão de Consultas Médicas</p>
+    <p class="tipo">Documentação técnica · Arquitectura · Guia de defesa</p>
+  </div>
+
+  <div class="capa-rodape">
+    <table class="alunos">
+      <tbody>
+        <tr><td>Ermenegildo dos Santos D. Alberto</td><td class="num">2025EIN122</td></tr>
+<tr><td>Fernando António Catemene</td><td class="num">2024EIN194</td></tr>
+<tr><td>Henriques Joaquim Gove</td><td class="num">2024EIN151</td></tr>
+<tr><td>Hilénio José Jamisse</td><td class="num">2024EIN196</td></tr>
+<tr><td>Teresa Francisco Mangue</td><td class="num">2024EIN187</td></tr>
+      </tbody>
+    </table>
+    <p class="docente"><strong>Docente:</strong> MSc. Luís Jorge Nhacanhaca</p>
+    <p class="local">Tete · 2026</p>
+  </div>
+</section>
+
+<section class="sumario">
+  <h1>Sumário</h1>
+  <ol>
+    <li>Em 30 segundos</li>
+<li>Antes da defesa — checklist de arranque</li>
+<li>Contas de demonstração</li>
+<li>Estrutura do projecto</li>
+<li>Onde está cada padrão (com o código)</li>
+<li>Regras de negócio — onde estão no código</li>
+<li>SMTP real (opcional)</li>
+<li>Guião de demonstração (10–12 minutos)</li>
+<li>Perguntas prováveis do docente</li>
+<li>Problemas comuns</li>
+<li>Checklist final (15 minutos antes)</li>
+<li>Referências rápidas</li>
+  </ol>
+  <p class="nota">
+    Documento gerado a partir de <code>docs/GUIA-DEFESA.md</code> em 13 de Novembro de 2026.
+    A aplicação corre localmente em <code>http://localhost:5173</code> (interface) e
+    <code>http://localhost:4000</code> (API). As credenciais, o link de demonstração e o
+    checklist de arranque estão nas secções 2, 3 e 11.
+  </p>
+</section>
+
+<main>
+<hr>
+<h2>1. Em 30 segundos</h2>
+<p>O <strong>MediAgenda</strong> é um sistema de marcação e gestão de consultas médicas de uma clínica com
+presença nas principais cidades de Moçambique. É um <strong>monólito modular</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Camada</th>
+<th>Tecnologia</th>
+<th>Pasta</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Interface</td>
+<td>React 18 + Vite (JavaScript, CSS próprio)</td>
+<td><code>web/src</code></td>
+</tr>
+<tr>
+<td>API</td>
+<td>Node.js 24 + Express</td>
+<td><code>server/src/api</code></td>
+</tr>
+<tr>
+<td>Domínio / padrões</td>
+<td>State, Chain, Strategy, Factory, Adapter, Command, Façade, Observer</td>
+<td><code>server/src/domain</code>, <code>commands</code>, <code>services</code>, <code>events</code></td>
+</tr>
+<tr>
+<td>Persistência</td>
+<td>SQLite nativo (<code>node:sqlite</code>), sem ORM</td>
+<td><code>server/src/repositories</code>, <code>db</code></td>
+</tr>
+<tr>
+<td>Testes</td>
+<td><code>node:test</code> (52 testes)</td>
+<td><code>server/tests</code></td>
+</tr>
+</tbody></table>
+<p>O que distingue o trabalho:</p>
+<ol>
+<li><strong>Os padrões estão a correr</strong>, não apenas desenhados. A cadeia de validação é executada a cada
+marcação e o resultado (com tempos por elo) fica gravado e visível no <strong>X-Ray</strong>.</li>
+<li><strong>Aprovação real de contas</strong>: médico só entra depois de a <strong>secretária</strong> confirmar; secretária só
+entra depois de o <strong>administrador</strong> autorizar.</li>
+<li><strong>Confirmação por e-mail</strong> com link de uso único (SMTP real via <code>nodemailer</code>, com fallback para
+outbox quando não há servidor configurado).</li>
+<li><strong>Permissões operacionais separadas</strong>: o administrador vê e configura, mas <strong>não</strong> confirma,
+cancela nem reagenda consultas.</li>
+<li><strong>Rede nacional</strong>: 16 médicos activos em 8 cidades (Maputo, Matola, Beira, Nampula, Quelimane,
+Tete, Chimoio, Pemba) + 2 contas pendentes para demonstrar as aprovações.</li>
+</ol>
+<hr>
+<h2>2. Antes da defesa — checklist de arranque</h2>
+<h3>2.1 O que tem de estar instalado</h3>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Versão mínima</th>
+<th>Como confirmar</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Node.js</td>
+<td><strong>24</strong> (obrigatório — <code>node:sqlite</code>)</td>
+<td><code>node -v</code> → <code>v24.x</code></td>
+</tr>
+<tr>
+<td>npm</td>
+<td>incluído no Node</td>
+<td><code>npm -v</code></td>
+</tr>
+<tr>
+<td>VS Code</td>
+<td>qualquer versão recente</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Navegador</td>
+<td>Chrome/Edge actualizado</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>Com Node 20 ou 22 a aplicação <strong>não arranca</strong> (<code>node:sqlite</code> não existe).</p>
+</blockquote>
+<h3>2.2 Arranque no VS Code (passo a passo)</h3>
+<ol>
+<li><p><strong>Abrir a pasta</strong> <code>D:\MediAgenda</code> no VS Code (<code>File → Open Folder</code>).</p>
+</li>
+<li><p>Abrir o terminal integrado: <code>Ctrl + Ê</code> (ou <code>Terminal → New Terminal</code>).</p>
+</li>
+<li><p>Confirmar que está em <code>D:\MediAgenda</code>: <code>pwd</code>.</p>
+</li>
+<li><p><strong>Instalar dependências</strong> (só na primeira vez): <code>npm install</code>.</p>
+</li>
+<li><p><strong>Renovar os dados de demonstração</strong> (recomendado antes da defesa): <code>npm run reset</code>.
+Recria 16 médicos activos, 15 consultas, eventos, notificações, auditoria e as duas contas
+pendentes.</p>
+</li>
+<li><p><strong>Arrancar tudo</strong>: <code>npm run dev</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Processo</th>
+<th>Porta</th>
+<th>Para que serve</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>API Express</td>
+<td><strong>4000</strong></td>
+<td>chamadas <code>/api/*</code>, scheduler, notificações</td>
+</tr>
+<tr>
+<td>Vite (React)</td>
+<td><strong>5173</strong></td>
+<td>interface, com proxy de <code>/api</code> para a 4000</td>
+</tr>
+</tbody></table>
+</li>
+<li><p>Abrir <a href="http://localhost:5173">http://localhost:5173</a>.</p>
+</li>
+<li><p>Confirmar a API: <a href="http://localhost:4000/api/health">http://localhost:4000/api/health</a> deve devolver <code>{&quot;ok&quot;:true,...}</code>.</p>
+</li>
+</ol>
+<blockquote>
+<p><strong>Alternativa em dois terminais</strong> (se o <code>concurrently</code> der problemas no Windows):
+terminal 1 <code>npm start</code>; terminal 2 <code>npx vite --config web/vite.config.js</code>.</p>
+</blockquote>
+<h3>2.3 O que tem de estar ligado</h3>
+<table>
+<thead>
+<tr>
+<th>Componente</th>
+<th>Obrigatório?</th>
+<th>Como verificar</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>npm run dev</code> a correr</td>
+<td><strong>Sim</strong></td>
+<td>devem aparecer as linhas <code>API</code> e <code>WEB</code></td>
+</tr>
+<tr>
+<td>API na porta 4000</td>
+<td><strong>Sim</strong></td>
+<td><a href="http://localhost:4000/api/health">http://localhost:4000/api/health</a></td>
+</tr>
+<tr>
+<td>Vite na porta 5173</td>
+<td><strong>Sim</strong> (para a UI)</td>
+<td><a href="http://localhost:5173">http://localhost:5173</a></td>
+</tr>
+<tr>
+<td>Servidor SMTP</td>
+<td>Não (opcional)</td>
+<td>sem SMTP os e-mails ficam em <code>server/outbox/email</code></td>
+</tr>
+<tr>
+<td>Internet</td>
+<td>Não</td>
+<td>tudo corre localmente</td>
+</tr>
+</tbody></table>
+<h3>2.4 Abas a deixar abertas</h3>
+<ol>
+<li><a href="http://localhost:5173">http://localhost:5173</a> — página inicial (pesquisa de médicos e “Onde estamos”).</li>
+<li><a href="http://localhost:4000/api/health">http://localhost:4000/api/health</a> — prova de que a API está viva.</li>
+<li>Janela anónima para alternar entre <strong>dois perfis</strong> sem logout.</li>
+<li>Pasta <code>D:\MediAgenda\server\outbox\email</code> aberta no Explorador.</li>
+</ol>
+<h3>2.5 Reinício limpo</h3>
+<pre><code class="language-powershell">npm run reset      # recria os dados de demonstração
+npm run dev        # volta a arrancar API + interface
+</code></pre>
+<p>Porta ocupada:</p>
+<pre><code class="language-powershell">Get-NetTCPConnection -LocalPort 4000,5173 -State Listen | Select-Object LocalPort,OwningProcess
+Stop-Process -Id &lt;PID&gt; -Force
+</code></pre>
+<hr>
+<h2>3. Contas de demonstração</h2>
+<table>
+<thead>
+<tr>
+<th>Perfil</th>
+<th>E-mail</th>
+<th>Palavra-passe</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Administrador</td>
+<td><code>admin@mediagenda.co.mz</code></td>
+<td><code>Admin@123</code></td>
+<td>aprova contas, relatórios, <strong>não</strong> opera consultas</td>
+</tr>
+<tr>
+<td>Secretária</td>
+<td><code>secretaria@mediagenda.co.mz</code></td>
+<td><code>Secretaria@123</code></td>
+<td>aprova <strong>médicos</strong>, cria médicos, opera consultas</td>
+</tr>
+<tr>
+<td>Médico</td>
+<td><code>antonio@mediagenda.co.mz</code></td>
+<td><code>Medico@123</code></td>
+<td>Dr. António Nhampossa — Tete, Cardiologia</td>
+</tr>
+<tr>
+<td>Paciente</td>
+<td><code>maria@example.com</code></td>
+<td><code>Paciente@123</code></td>
+<td>paciente com histórico</td>
+</tr>
+<tr>
+<td><strong>Médico pendente</strong></td>
+<td><code>dr.pendente@mediagenda.co.mz</code></td>
+<td><code>Medico@123</code></td>
+<td>login <strong>bloqueado</strong> até a secretária aprovar</td>
+</tr>
+<tr>
+<td><strong>Secretária pendente</strong></td>
+<td><code>secretaria.pendente@mediagenda.co.mz</code></td>
+<td><code>Secretaria@123</code></td>
+<td>login <strong>bloqueado</strong> até o admin aprovar</td>
+</tr>
+</tbody></table>
+<p>Outros médicos (todos <code>Medico@123</code>): <code>joaquim@</code>, <code>ana.medica@</code>, <code>lucia@</code>, <code>nelson@</code>, <code>fatima@</code>,
+<code>helder@</code>, <code>rosalia@</code>, <code>americo@</code>, <code>isabel@</code>, <code>zacarias@</code>, <code>celeste@</code>, <code>elias@</code>, <code>noemia@</code>,
+<code>barnabe@</code>, <code>sonia@</code> — todos <code>@mediagenda.co.mz</code>.
+Outros pacientes (<code>Paciente@123</code>): <code>carlos@example.com</code>, <code>ana@example.com</code>.</p>
+<hr>
+<h2>4. Estrutura do projecto</h2>
+<pre><code>D:\MediAgenda
+├─ server
+│  ├─ src
+│  │  ├─ api
+│  │  │  ├─ app.js               Express, rotas e ficheiros estáticos
+│  │  │  ├─ middleware.js        Bearer, RBAC (exigirPerfil), erros, rate limit
+│  │  │  └─ routes
+│  │  │     ├─ auth.js           registo, login, confirmação de e-mail, recuperação
+│  │  │     ├─ publico.js        clínica, médicos, horários,
+│  │  │     │                    confirmação pública de consulta (link do e-mail)
+│  │  │     ├─ consultas.js      marcar, listar, confirmar, cancelar, reagendar, realizar, avaliar
+│  │  │     ├─ medico.js         agenda e disponibilidade do médico
+│  │  │     ├─ pacientes.js      gestão de pacientes (secretária)
+│  │  │     ├─ secretaria.js     médicos + aprovações da secretária
+│  │  │     ├─ admin.js          relatórios, utilizadores, aprovações, configuração
+│  │  │     ├─ notificacoes.js   caixa de notificações
+│  │  │     └─ demo.js           Architecture Lab, tick do scheduler, estado do sistema
+│  │  ├─ commands/consultaCommands.js     Command: cancelar e reagendar
+│  │  ├─ config/ConfiguracaoSistema.js    Singleton de configuração
+│  │  ├─ db
+│  │  │  ├─ schema.sql           tabelas, índices e chaves estrangeiras
+│  │  │  ├─ index.js             ligação SQLite (node:sqlite)
+│  │  │  └─ seed.js              dados de demonstração (rede nacional + pendentes)
+│  │  ├─ domain
+│  │  │  ├─ consulta/estados.js           State
+│  │  │  ├─ validacao/cadeia.js           Chain of Responsibility (RN-01…RN-09)
+│  │  │  └─ notificacao
+│  │  │     ├─ canais.js                  ISP + Adapter (SMTP real, SMS, WhatsApp)
+│  │  │     ├─ factory.js                 Factory Method
+│  │  │     └─ estrategias.js             Strategy (canal e duração)
+│  │  ├─ events/EventBus.js               EDA + Observer + outbox
+│  │  ├─ repositories/*.js                Repository (SQL encapsulado)
+│  │  ├─ services
+│  │  │  ├─ AgendamentoFacade.js          Façade de marcação/cancelamento/reagendamento
+│  │  │  ├─ ConsultaService.js            confirmar, realizar, expirar, lembretes, links
+│  │  │  ├─ AuthService.js                registo, aprovação, login, e-mails
+│  │  │  ├─ MedicoService.js              horários, desactivar (RN-08)
+│  │  │  ├─ NotificacaoService.js         observador de eventos → canais
+│  │  │  └─ RelatorioService.js           KPIs, relatórios e CSV
+│  │  ├─ container.js            injecção de dependências (composição)
+│  │  └─ index.js                arranque da API + scheduler (60 s)
+│  ├─ tests/                     52 testes (node:test)
+│  ├─ outbox/                    e-mails/SMS/WhatsApp gerados (auditáveis)
+│  └─ data/mediagenda.db         base SQLite (criada no arranque)
+├─ web/src
+│  ├─ App.jsx                    rotas públicas e protegidas
+│  ├─ auth.jsx                   contexto de sessão
+│  ├─ api.js                     cliente HTTP + token
+│  ├─ pages/                     Login, Registo, Inicio, painéis, confirmações, Arquitetura…
+│  ├─ components/                Layout, UI, AcoesConsulta (permissões por perfil)
+│  └─ styles.css                 design system, modo escuro, responsividade
+└─ docs/                         ARQUITETURA.md, API.md, GUIA-DEFESA.md
+</code></pre>
+<hr>
+<h2>5. Onde está cada padrão (com o código)</h2>
+<h3>5.1 Singleton — <code>server/src/config/ConfiguracaoSistema.js</code></h3>
+<pre><code class="language-js">export class ConfiguracaoSistema {
+  static #instancia = null;
+  static obterInstancia() {
+    if (!ConfiguracaoSistema.#instancia) {
+      ConfiguracaoSistema.#instancia = new ConfiguracaoSistema();
+    }
+    return ConfiguracaoSistema.#instancia;
+  }
+</code></pre>
+<p>Uma única configuração (horário, antecedência, limites, prazo de confirmação) partilhada por todos
+os serviços. Alterações em <strong>Admin → Configuração</strong> entram imediatamente na cadeia de validação.</p>
+<h3>5.2 Chain of Responsibility — <code>server/src/domain/validacao/cadeia.js</code></h3>
+<pre><code class="language-js">export class Validador {
+  definirProximo(validador) { this.proximo = validador; return validador; }
+  executar(contexto) {
+    const resultado = this.verificar(contexto);
+    if (!resultado.ok) return { ok: false, falhouEm: this.codigo };
+    return this.proximo ? this.proximo.executar(contexto) : { ok: true };
+  }
+}
+</code></pre>
+<p>Cinco elos independentes, por esta ordem:</p>
+<table>
+<thead>
+<tr>
+<th>Ordem</th>
+<th>Classe</th>
+<th>Regra</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><code>AntecedenciaMinima</code></td>
+<td>RN-01</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>HorarioFuncionamento</code></td>
+<td>RN-09 (horário + disponibilidade + bloqueios)</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>ConflitoAgenda</code></td>
+<td>RN-05</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>LimiteDiarioMedico</code></td>
+<td>RN-03</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>LimitePaciente</code></td>
+<td>RN-06</td>
+</tr>
+</tbody></table>
+<p><strong>Onde ver na UI:</strong> ao marcar, o modal mostra os 5 elos com ✅/❌ e a duração de cada um.
+O trace fica em <code>validacoes_traces</code> e aparece no <strong>X-Ray</strong> da consulta e no <strong>Architecture Lab</strong>.</p>
+<h3>5.3 State — <code>server/src/domain/consulta/estados.js</code></h3>
+<pre><code class="language-js">export class EstadoPendente extends EstadoConsulta {
+  confirmar(consulta, agora) { /* RN-07: só dentro do prazo */ }
+  cancelar(consulta, agora) { /* RN-02: calcula se é tardio */ }
+  get transicoes() { return [&#39;confirmada&#39;, &#39;cancelada&#39;]; }
+}
+</code></pre>
+<pre><code>pendente ──confirmar──► confirmada ──realizar──► realizada
+   │                        │
+   └──────cancelar──────────┴──► cancelada
+</code></pre>
+<p>Cada estado recusa operações inválidas com <code>TRANSICAO_INVALIDA</code> (HTTP 409) — não há
+<code>if (estado === &#39;pendente&#39;)</code> espalhado pelos serviços.</p>
+<h3>5.4 Strategy — <code>server/src/domain/notificacao/estrategias.js</code></h3>
+<pre><code class="language-js">const ESTRATEGIAS = {
+  email: new EstrategiaEmail(),
+  sms: new EstrategiaSMS(),
+  ambos: new EstrategiaAmbos(),
+  whatsapp: new EstrategiaWhatsApp()
+};
+export function obterEstrategiaNotificacao(preferencia) {
+  return ESTRATEGIAS[preferencia] || ESTRATEGIAS.email;
+}
+</code></pre>
+<p>Duas estratégias: <strong>canal de notificação</strong> (preferência do utilizador) e <strong>duração da consulta</strong>
+(<code>DuracaoPadrao</code> vs. <code>DuracaoPorEspecialidade</code>, RN-04, limitada a 60–120 min).
+<strong>Demonstração:</strong> Perfil → Notificações → WhatsApp; sem telefone recua para e-mail.</p>
+<h3>5.5 Factory Method — <code>server/src/domain/notificacao/factory.js</code></h3>
+<pre><code class="language-js">export class NotificacaoFactory {
+  criar(tipo) {
+    if (tipo === &#39;email&#39;) return new EmailNotificacao(this.#email);
+    if (tipo === &#39;sms&#39;) return new SMSNotificacao(this.#sms);
+    if (tipo === &#39;whatsapp&#39;) return new WhatsAppNotificacao(this.#whatsapp);
+    throw new Error(`Tipo de notificação desconhecido: ${tipo}`);
+  }
+}
+</code></pre>
+<p>Quem chama pede <code>criar(&#39;email&#39;)</code> e recebe a classe concreta — sem conhecer a construção.
+Acrescentar um canal novo não altera o <code>NotificacaoService</code>.</p>
+<h3>5.6 Adapter + ISP — <code>server/src/domain/notificacao/canais.js</code></h3>
+<pre><code class="language-js">export class IEnviadorEmail {
+  async enviarEmail() { throw new Error(&#39;não implementado&#39;); }
+}
+
+export class AdapterSMTP extends IEnviadorEmail {
+  get configurado() { return Boolean(this.host &amp;&amp; this.utilizador &amp;&amp; this.password); }
+
+  async enviarEmail({ para, assunto, corpo }) {
+    // grava sempre uma cópia em outbox/email
+    if (!this.configurado) return { id, ficheiro, provedor: &#39;SMTP simulado (outbox)&#39; };
+    const transporte = await this.#obterTransporte();      // nodemailer
+    const info = await transporte.sendMail({ from: this.remetente, to: para, subject: assunto, text: corpo });
+    return { id, ficheiro, provedor: &#39;SMTP real (nodemailer)&#39;, messageId: info.messageId };
+  }
+}
+</code></pre>
+<ul>
+<li><code>IEnviadorEmail</code>, <code>IEnviadorSMS</code> e <code>IEnviadorWhatsApp</code> são <strong>interfaces pequenas (ISP)</strong>.</li>
+<li>O <code>AdapterWhatsApp</code> foi acrescentado <strong>sem alterar nenhum serviço existente</strong>.</li>
+<li>O <code>AdapterSMTP</code> fala <strong>SMTP real</strong> (<code>nodemailer</code>) quando existem variáveis de ambiente; sem elas
+grava em <code>server/outbox/email</code> para a demonstração offline.</li>
+</ul>
+<h3>5.7 Façade — <code>server/src/services/AgendamentoFacade.js</code></h3>
+<pre><code class="language-js">export class AgendamentoFacade {
+  async marcar({ utilizador, pacienteId, medicoId, especialidadeId, dataHora, ip }) {
+    // permissões → duração (Strategy) → cadeia → persistência → evento → auditoria
+  }
+}
+</code></pre>
+<p>Uma única chamada esconde a sequência completa. O frontend <strong>nunca</strong> executa regras de negócio;
+fala apenas com a Façade através de <code>/api/consultas</code>.</p>
+<h3>5.8 Command — <code>server/src/commands/consultaCommands.js</code></h3>
+<pre><code class="language-js">export class CancelarConsultaCommand extends Command {
+  descricao() { return &#39;Cancelamento de consulta&#39;; }
+  async executar({ utilizador, consultaId, motivo, ip }) {
+    // perfil e propriedade → State → histórico → evento → auditoria
+  }
+}
+</code></pre>
+<p>Cada operação crítica é um objecto que <strong>sabe descrever-se</strong> para a auditoria.
+O administrador é bloqueado aqui — no servidor, não só na interface.</p>
+<h3>5.9 Observer + EDA + Outbox — <code>server/src/events/EventBus.js</code></h3>
+<pre><code class="language-js">async publicar(tipo, payload) {
+  const eventoId = this.#eventoRepository.criar(tipo, payload);   // outbox primeiro
+  for (const { nome, handler } of this.#subscritores.get(tipo) || []) {
+    await handler({ id: eventoId, tipo, payload });
+    this.#eventoRepository.registarConsumo(eventoId, nome, &#39;sucesso&#39;, null);
+  }
+  this.#eventoRepository.marcarProcessado(eventoId);
+}
+</code></pre>
+<p>Três observadores independentes em <code>container.js</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Observador</th>
+<th>Reacção</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>NotificacaoService</code></td>
+<td>envia e-mail/SMS/WhatsApp ao paciente e ao médico</td>
+</tr>
+<tr>
+<td><code>RelatorioService</code></td>
+<td>invalida a cache dos KPIs</td>
+</tr>
+<tr>
+<td><code>AuditoriaService</code></td>
+<td>regista <code>EVENTO:&lt;tipo&gt;</code></td>
+</tr>
+</tbody></table>
+<p><strong>Onde ver na UI:</strong> <strong>Architecture Lab → Event Monitor</strong> (eventos, consumidores e outbox) e a página
+<strong>Notificações</strong>.</p>
+<h3>5.10 Repository + DIP — <code>server/src/repositories/*.js</code> e <code>container.js</code></h3>
+<pre><code class="language-js">export const agendamentoFacade = new AgendamentoFacade({
+  consultaRepository: repositorios.consultas,
+  medicoRepository: repositorios.medicos,
+  eventoBus,
+  auditoriaService,
+  cadeia,
+  duracaoStrategy,
+  traceRepository: repositorios.traces,
+  configuracao
+});
+</code></pre>
+<p>Os serviços dependem de <strong>abstrações</strong> injectadas no <code>container</code>. Nenhum serviço escreve SQL:
+todo o acesso a dados está nos repositórios. Trocar SQLite por PostgreSQL implica mudar apenas
+essa camada.</p>
+<h3>5.11 Outros princípios</h3>
+<table>
+<thead>
+<tr>
+<th>Princípio</th>
+<th>Onde se prova</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>SRP</strong></td>
+<td>cada validador valida <strong>uma</strong> regra; cada serviço tem um caso de uso</td>
+</tr>
+<tr>
+<td><strong>OCP</strong></td>
+<td>canal WhatsApp acrescentado sem alterar serviços existentes</td>
+</tr>
+<tr>
+<td><strong>LSP</strong></td>
+<td><code>EstadoPendente</code>, <code>EstadoConfirmada</code>… substituem <code>EstadoConsulta</code></td>
+</tr>
+<tr>
+<td><strong>ISP</strong></td>
+<td>interfaces separadas para e-mail, SMS e WhatsApp</td>
+</tr>
+<tr>
+<td><strong>DIP</strong></td>
+<td>serviços recebem repositórios por injecção (<code>container.js</code>)</td>
+</tr>
+<tr>
+<td><strong>DRY</strong></td>
+<td><code>utils/tempo.js</code>, <code>utils/security.js</code>, <code>utils/erros.js</code></td>
+</tr>
+<tr>
+<td><strong>KISS</strong></td>
+<td>SQLite embutido, sem Docker, sem ORM, sem Tailwind</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>5.12 Requisitos funcionais — rastreabilidade com o enunciado</h3>
+<table>
+<thead>
+<tr>
+<th>RF</th>
+<th>Requisito (PDF)</th>
+<th>Onde está implementado</th>
+<th>Onde ver</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RF-01</td>
+<td>Registo + confirmação de e-mail</td>
+<td><code>AuthService.registar</code>, <code>auth.js</code>, <code>ConfirmarEmail.jsx</code></td>
+<td><code>/registo</code>, <code>/confirmar-email</code></td>
+</tr>
+<tr>
+<td>RF-02</td>
+<td>Autenticação, recuperação e RBAC</td>
+<td><code>AuthService.login/recuperar</code>, <code>middleware.autenticar/exigirPerfil</code></td>
+<td><code>/login</code>, <code>/redefinir</code></td>
+</tr>
+<tr>
+<td>RF-03</td>
+<td>Pesquisa e marcação de consultas</td>
+<td><code>publico.js</code>, <code>AgendamentoFacade.marcar</code>, <code>MedicoDetalhe.jsx</code></td>
+<td>página inicial → médico → slot</td>
+</tr>
+<tr>
+<td>RF-04</td>
+<td>Agenda, disponibilidade e bloqueios</td>
+<td><code>medicoService.definirDisponibilidades</code>, <code>PainelMedico.jsx</code></td>
+<td><code>/medico</code> → Disponibilidade</td>
+</tr>
+<tr>
+<td>RF-05</td>
+<td>Cancelamento e reagendamento</td>
+<td><code>CancelarConsultaCommand</code>, <code>ReagendarConsultaCommand</code></td>
+<td><code>AcoesConsulta</code> em todas as listas</td>
+</tr>
+<tr>
+<td>RF-06</td>
+<td>Notificações (confirmação, 24h, 1h, cancelamento)</td>
+<td><code>NotificacaoService</code>, scheduler, <code>canais.js</code></td>
+<td><code>/notificacoes</code>, <code>server/outbox</code></td>
+</tr>
+<tr>
+<td>RF-07</td>
+<td>Histórico com filtros</td>
+<td><code>MinhasConsultas.jsx</code>, <code>ConsultaRepository.listar*</code></td>
+<td><code>/consultas</code></td>
+</tr>
+<tr>
+<td>RF-08</td>
+<td>Painel do médico</td>
+<td><code>medico.js</code>, <code>PainelMedico.jsx</code></td>
+<td><code>/medico</code></td>
+</tr>
+<tr>
+<td>RF-09</td>
+<td>Cadastro e gestão de pacientes</td>
+<td><code>pacientes.js</code>, separador <strong>Pacientes</strong></td>
+<td><code>/secretaria</code></td>
+</tr>
+<tr>
+<td>RF-10</td>
+<td>Cadastro de médicos</td>
+<td><code>secretaria.js</code>, <code>admin.js</code>, <code>PainelSecretario.jsx</code></td>
+<td><code>/secretaria</code> → <strong>+ Novo médico</strong></td>
+</tr>
+<tr>
+<td>RF-11</td>
+<td>Gestão de especialidades</td>
+<td><code>admin.js</code> (<code>/especialidades</code>), <code>PainelAdmin.jsx</code></td>
+<td><code>/admin</code> → Configuração</td>
+</tr>
+<tr>
+<td>RF-12</td>
+<td>Avaliação de consultas (1–5)</td>
+<td><code>avaliacoes</code> + <code>ConsultaDetalhe.jsx</code></td>
+<td>consulta realizada → <strong>Avaliar</strong></td>
+</tr>
+<tr>
+<td>RF-13</td>
+<td>Relatórios e estatísticas</td>
+<td><code>RelatorioService.resumo/relatorioMedico</code></td>
+<td><code>/admin</code> → Relatórios</td>
+</tr>
+<tr>
+<td>RF-14</td>
+<td>Pesquisa por nome, especialidade, localização e avaliação</td>
+<td><code>medicoService.listar</code> (<code>avaliacaoMin</code>)</td>
+<td>página inicial (pesquisa e cartões)</td>
+</tr>
+</tbody></table>
+<p>As RN-01…RN-09 estão na secção 6; os RNF estão no <code>README.md</code> (secção 2) e o mapa completo
+RF/RN/RNF está no <code>README.md</code>.</p>
+<hr>
+<h2>6. Regras de negócio — onde estão no código</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Regra</th>
+<th>Implementação</th>
+<th>Como demonstrar</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RN-01</td>
+<td>Antecedência mínima de 1h</td>
+<td><code>AntecedenciaMinima</code> (<code>cadeia.js</code>)</td>
+<td>marcar a menos de 1h → cadeia pára no 1.º elo</td>
+</tr>
+<tr>
+<td>RN-02</td>
+<td>Cancelar &lt; 24h é tardio e fica registado</td>
+<td><code>EstadoPendente/Confirmada.cancelar</code></td>
+<td>cancelar uma consulta de amanhã → badge “tardio”</td>
+</tr>
+<tr>
+<td>RN-03</td>
+<td>Limite diário do médico (10; Dr. António = 8)</td>
+<td><code>LimiteDiarioMedico</code></td>
+<td>Architecture Lab → <strong>Preparar caso RN-03</strong> → executar</td>
+</tr>
+<tr>
+<td>RN-04</td>
+<td>Duração pela especialidade/médico (60–120)</td>
+<td><code>EstrategiaDuracaoConsulta</code></td>
+<td>Ortopedia (90 min) vs. Cardiologia (60)</td>
+</tr>
+<tr>
+<td>RN-05</td>
+<td>Sem consultas simultâneas do mesmo médico</td>
+<td><code>ConflitoAgenda</code></td>
+<td>tentar o mesmo slot duas vezes</td>
+</tr>
+<tr>
+<td>RN-06</td>
+<td>Máx. 3 consultas futuras por paciente/médico</td>
+<td><code>LimitePaciente</code></td>
+<td>repetir marcações com a mesma paciente</td>
+</tr>
+<tr>
+<td>RN-07</td>
+<td>Confirmação em 2h, senão a vaga é libertada</td>
+<td><code>EstadoPendente.confirmar</code> + scheduler</td>
+<td>Admin → <strong>Executar scheduler</strong></td>
+</tr>
+<tr>
+<td>RN-08</td>
+<td>Desactivar médico cancela futuras e notifica</td>
+<td><code>MedicoService.desactivar</code></td>
+<td>Admin → Médicos → Desactivar</td>
+</tr>
+<tr>
+<td>RN-09</td>
+<td>Horário da clínica + disponibilidade + bloqueios</td>
+<td><code>HorarioFuncionamento</code></td>
+<td>domingo ou hora fora de 08:00–20:00</td>
+</tr>
+</tbody></table>
+<p>Cada execução da cadeia é gravada em <code>validacoes_traces</code>, com o resultado e o tempo de cada elo.</p>
+<h3>6.1 Regras novas pedidas para a defesa</h3>
+<table>
+<thead>
+<tr>
+<th>Regra</th>
+<th>Onde está implementada</th>
+<th>Onde se vê na UI</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Médico só entra após confirmação da <strong>secretária</strong></td>
+<td><code>AuthService.registar</code> (<code>estadoAprovacao=&#39;pendente&#39;</code>, <code>ativo=0</code>), <code>AuthService.login</code> (<code>APROVACAO_PENDENTE</code>), <code>AuthService.aprovar</code></td>
+<td><code>/registo</code> (aviso), <code>/secretaria</code> → <strong>Médicos &amp; aprovações</strong></td>
+</tr>
+<tr>
+<td>Secretária só funciona após autorização do <strong>administrador</strong></td>
+<td><code>AuthService.#garantirPoderDeAprovacao</code>, <code>admin.js</code></td>
+<td><code>/admin</code> → <strong>Aprovações</strong></td>
+</tr>
+<tr>
+<td>Secretária também pode <strong>criar médicos</strong></td>
+<td><code>POST /api/secretaria/medicos</code></td>
+<td><code>/secretaria</code> → <strong>+ Novo médico</strong></td>
+</tr>
+<tr>
+<td>Confirmar que a consulta aconteceu: <strong>médico e secretária</strong></td>
+<td><code>ConsultaService.realizar</code></td>
+<td>botão “Realizada” só nesses perfis</td>
+</tr>
+<tr>
+<td>Cancelar/reagendar: <strong>paciente, médico e secretária</strong></td>
+<td><code>CancelarConsultaCommand</code>, <code>ReagendarConsultaCommand</code></td>
+<td>botões em <code>AcoesConsulta</code></td>
+</tr>
+<tr>
+<td><strong>Administrador não</strong> faz operações operacionais</td>
+<td>verificação de perfil nas Commands e no <code>ConsultaService</code></td>
+<td>no admin os botões desaparecem; API devolve 403</td>
+</tr>
+<tr>
+<td>Confirmação <strong>real por e-mail</strong></td>
+<td><code>AdapterSMTP</code> (nodemailer) + <code>NotificacaoService</code> (link com token)</td>
+<td>caixa real <strong>ou</strong> <code>server/outbox/email</code></td>
+</tr>
+</tbody></table>
+<h3>6.2 Fluxo de aprovação</h3>
+<pre><code>Formulário público /registo
+        │
+        ├── paciente   → conta activa de imediato
+        │
+        ├── médico     → estado_aprovacao = &#39;pendente&#39;, ativo = 0
+        │                 └── notifica secretária + admin
+        │                 └── secretária aprova → login passa a funcionar
+        │
+        └── secretária → estado_aprovacao = &#39;pendente&#39;, ativo = 0
+                          └── notifica admin
+                          └── admin aprova → login passa a funcionar
+</code></pre>
+<p>Em <code>users</code> ficam <code>estado_aprovacao</code>, <code>aprovado_em</code>, <code>aprovado_por</code>. Enquanto <code>pendente</code>, o login
+devolve <strong>403 <code>APROVACAO_PENDENTE</code></strong> (a palavra-passe é validada primeiro, para não revelar se o
+e-mail existe).</p>
+<blockquote>
+<p>A secretária <strong>não</strong> aprova secretárias: a regra está no servidor
+(<code>AuthService.#garantirPoderDeAprovacao</code>) e devolve 403 mesmo por chamada directa à API.</p>
+</blockquote>
+<h3>6.3 Confirmação de consulta por link (uso único)</h3>
+<ol>
+<li>Ao marcar, a Façade gera <code>token_confirmacao</code> e guarda-o na consulta.</li>
+<li>O e-mail inclui <code>http://localhost:5173/confirmar-consulta?id=&lt;id&gt;&amp;token=&lt;token&gt;</code>.</li>
+<li>A página pública mostra médico, especialidade, data e paciente.</li>
+<li>Ao confirmar, <code>ConsultaService.confirmarPorLink</code> valida o token, aplica o State (RN-07) e
+<strong>apaga o token</strong> — o link deixa de funcionar (404).</li>
+<li>Link pronto no seed:
+<code>http://localhost:5173/confirmar-consulta?id=6&amp;token=demo-consulta-pendente</code></li>
+</ol>
+<h3>6.4 Confirmação de e-mail (registo)</h3>
+<p><code>POST /api/auth/registo</code> gera <code>token_confirmacao</code> e envia o link
+<code>http://localhost:5173/confirmar-email?token=...</code>. A página confirma sem sessão e regista auditoria
+(<code>EMAIL_CONFIRMADO</code>). O formulário mostra o link em modo demonstração, para não depender de uma
+caixa de correio real durante a apresentação.</p>
+<hr>
+<h2>7. SMTP real (opcional)</h2>
+<p>Sem configuração, os e-mails são gravados em <code>server/outbox/email/*.eml</code> (abrir com o Bloco de
+Notas). Para envio <strong>real</strong>, definir as variáveis <strong>antes</strong> de arrancar a API:</p>
+<h3>PowerShell</h3>
+<pre><code class="language-powershell">$env:SMTP_HOST   = &quot;smtp.gmail.com&quot;
+$env:SMTP_PORT   = &quot;587&quot;
+$env:SMTP_USER   = &quot;a-sua-conta@gmail.com&quot;
+$env:SMTP_PASS   = &quot;palavra-passe-de-aplicacao&quot;
+$env:SMTP_FROM   = &quot;MediAgenda &lt;a-sua-conta@gmail.com&gt;&quot;
+$env:SMTP_SECURE = &quot;false&quot;
+$env:MEDIAGENDA_URL = &quot;http://localhost:5173&quot;
+npm run dev
+</code></pre>
+<h3>VS Code (<code>launch.json</code>)</h3>
+<pre><code class="language-json">{
+  &quot;type&quot;: &quot;node&quot;,
+  &quot;request&quot;: &quot;launch&quot;,
+  &quot;name&quot;: &quot;MediAgenda API&quot;,
+  &quot;program&quot;: &quot;${workspaceFolder}/server/src/index.js&quot;,
+  &quot;env&quot;: {
+    &quot;PORT&quot;: &quot;4000&quot;,
+    &quot;SMTP_HOST&quot;: &quot;smtp.gmail.com&quot;,
+    &quot;SMTP_PORT&quot;: &quot;587&quot;,
+    &quot;SMTP_USER&quot;: &quot;a-sua-conta@gmail.com&quot;,
+    &quot;SMTP_PASS&quot;: &quot;palavra-passe-de-aplicacao&quot;,
+    &quot;SMTP_FROM&quot;: &quot;MediAgenda &lt;a-sua-conta@gmail.com&gt;&quot;,
+    &quot;MEDIAGENDA_URL&quot;: &quot;http://localhost:5173&quot;
+  }
+}
+</code></pre>
+<p>Notas:</p>
+<ul>
+<li>Gmail exige <strong>palavra-passe de aplicação</strong> (conta com verificação em dois passos).</li>
+<li>Mailtrap (sandbox): <code>SMTP_HOST=sandbox.smtp.mailtrap.io</code>, porta <code>2525</code>.</li>
+<li>Se o envio real falhar, a notificação fica registada com erro <strong>e</strong> a cópia em <code>outbox</code> continua
+disponível — a demonstração nunca fica bloqueada.</li>
+<li>Prova rápida: <strong>Registo</strong> de um paciente → abrir <code>server/outbox/email</code> (ou a caixa real) →
+clicar no link <code>confirmar-email</code>.</li>
+</ul>
+<hr>
+<h2>8. Guião de demonstração (10–12 minutos)</h2>
+<blockquote>
+<p>Sugestão: dois navegadores (normal = admin, anónimo = secretária) para não perder tempo com logins.</p>
+</blockquote>
+<h3>0. Abertura (30 s)</h3>
+<ul>
+<li>Mostrar <a href="http://localhost:5173">http://localhost:5173</a> sem sessão: pesquisa por especialidade/cidade, cartões de médicos,
+secção <strong>“Onde estamos”</strong> (8 cidades).</li>
+<li>Dizer: “é um monólito modular; a interface só fala com a API; o domínio está isolado.”</li>
+</ul>
+<h3>1. Registo de médico fica pendente (1 min 30 s)</h3>
+<ol>
+<li>Ir a <strong>/registo</strong> e escolher perfil <strong>Médico</strong> — mostrar o aviso “aprovação necessária”.</li>
+<li>Submeter com e-mail novo (ex.: <code>dr.demo@mediagenda.co.mz</code>, nº <code>OM-9999</code>, cidade Beira).</li>
+<li>Mostrar a mensagem de <strong>cadastro pendente</strong> e o link de confirmação de e-mail.</li>
+<li>Tentar <strong>entrar</strong> com essas credenciais → erro <strong>“Cadastro pendente. A secretária ainda não
+confirmou o seu registo.”</strong> (403 <code>APROVACAO_PENDENTE</code>).</li>
+</ol>
+<h3>2. Secretária aprova o médico (1 min)</h3>
+<ol>
+<li>Iniciar sessão como <strong>secretária</strong> (<code>secretaria@mediagenda.co.mz</code>).</li>
+<li>Abrir <strong>Médicos &amp; aprovações</strong> → mostrar o cadastro pendente (e o <code>dr.pendente@</code> do seed).</li>
+<li><strong>Aprovar</strong> → toast; o médico passa a aparecer na lista de médicos activos.</li>
+<li>(Opcional) Voltar ao outro navegador e entrar com a conta aprovada → funciona.</li>
+</ol>
+<h3>3. Secretária não pode aprovar secretárias (45 s)</h3>
+<ol>
+<li>Ainda como secretária, note-se que a lista só mostra <strong>médicos</strong>.</li>
+<li>Mostrar no código <code>AuthService.#garantirPoderDeAprovacao</code> (ou tentar pela API) → <strong>403</strong>.</li>
+</ol>
+<h3>4. Administrador autoriza a secretária (1 min)</h3>
+<ol>
+<li>Sair e entrar como <strong>admin</strong> (<code>admin@mediagenda.co.mz</code>).</li>
+<li><strong>Aprovações</strong> → ver <code>secretaria.pendente@</code> (o médico aprovado já não aparece).</li>
+<li><strong>Aprovar</strong> a secretária.</li>
+<li>Mostrar <strong>Utilizadores</strong> com as colunas <code>Aprovação</code> e <code>Estado</code>.</li>
+</ol>
+<h3>5. Administrador não opera consultas (1 min)</h3>
+<ol>
+<li>Ainda no admin, abrir <strong>Relatórios</strong> e uma consulta.</li>
+<li>Mostrar que <strong>não há botões</strong> de confirmar/cancelar/reagendar; a mensagem explica que são
+operações da secretaria/médico.</li>
+<li>(Se quiser) chamar a API directamente → <strong>403</strong> “O administrador não pode cancelar consultas.”</li>
+</ol>
+<h3>6. Marcar com a cadeia de validação (2 min)</h3>
+<ol>
+<li>Entrar como <strong>paciente</strong> (<code>maria@example.com</code>).</li>
+<li>Abrir um médico (ex.: Dra. Ana Lopes, Pediatria) → escolher um slot → <strong>Marcar</strong>.</li>
+<li>Mostrar o resultado da <strong>cadeia</strong>: 5 elos ✅ com tempos.</li>
+<li>Repetir com um horário a menos de 1h → <strong>RN-01</strong> ❌ e a marcação é recusada.</li>
+<li>Abrir o link de confirmação do e-mail gerado (ou o link fixo do seed:
+<code>http://localhost:5173/confirmar-consulta?id=6&amp;token=demo-consulta-pendente</code>) → <strong>Confirmar</strong>.</li>
+<li>Recarregar o mesmo link → <strong>404</strong> (token de uso único).</li>
+<li>Abrir <code>server/outbox/email</code> e mostrar o <code>.eml</code> com o link.</li>
+</ol>
+<h3>7. Médico e secretária confirmam que houve consulta (1 min)</h3>
+<ol>
+<li>Como <strong>médico</strong> (<code>antonio@mediagenda.co.mz</code>): abrir uma consulta <strong>confirmada</strong> → botão
+<strong>“Marcar como realizada”</strong> → funciona.</li>
+<li>Como <strong>paciente</strong>, a mesma consulta <strong>não</strong> mostra esse botão.</li>
+<li>Como <strong>secretária</strong>, também consegue marcar como realizada (regra pedida).</li>
+</ol>
+<h3>8. Architecture Lab (2 min)</h3>
+<ol>
+<li>Como admin, abrir <strong>/arquitetura</strong>.</li>
+<li>Mostrar a lista de padrões com ficheiro e descrição.</li>
+<li><strong>Preparar caso RN-03</strong> → <strong>Executar cadeia</strong> → ver o elo que falhou e o trace.</li>
+<li>Abrir <strong>Event Monitor</strong>: eventos publicados, consumidores e cópias na outbox.</li>
+<li>Mostrar a aba <strong>“Sem padrões vs. Com padrões”</strong>.</li>
+</ol>
+<h3>9. Fecho (1 min)</h3>
+<ol>
+<li><strong>/auditoria</strong>: filtrar por <code>LOGIN</code>, <code>CONTA_APROVADA</code>, <code>CONSULTA_CANCELADA</code>, <code>EVENTO:</code>.</li>
+<li><strong>Admin → Relatórios</strong>: exportar <strong>Excel (CSV)</strong> e imprimir <strong>PDF</strong>.</li>
+<li>Alternar <strong>modo escuro</strong> e estreitar a janela (responsividade).</li>
+<li>Referir os <strong>52 testes</strong> (<code>npm test</code>) e este documento.</li>
+</ol>
+<hr>
+<h2>9. Perguntas prováveis do docente</h2>
+<p><strong>“Porque SQLite e não MySQL?”</strong>
+Zero configuração para a defesa e para o deploy num único processo; o acesso está isolado em
+repositórios, pelo que a migração para PostgreSQL muda apenas essa camada.</p>
+<p><strong>“Onde está a regra X?”</strong>
+Todas as RN-01…RN-09 estão na tabela da secção 6, com a classe e o ficheiro. As validações de
+marcação estão em <code>domain/validacao/cadeia.js</code>; as transições em <code>domain/consulta/estados.js</code>.</p>
+<p><strong>“A aprovação está só na interface?”</strong>
+Não. <code>AuthService.login</code> valida <code>estado_aprovacao</code> e devolve 403. Mesmo chamando a API directamente,
+um médico pendente não entra. A secretária também não aprova secretárias — o servidor recusa.</p>
+<p><strong>“Como garantem que o administrador não cancela consultas?”</strong>
+As Commands (<code>CancelarConsultaCommand</code>, <code>ReagendarConsultaCommand</code>) e o <code>ConsultaService.realizar</code>
+verificam o perfil e lançam <code>ErroProibido</code>. Os botões desaparecem na UI, mas a defesa está no
+servidor.</p>
+<p><strong>“A RN-08 não é uma operação do administrador?”</strong>
+A desactivação é pedida pelo admin, mas o cancelamento das consultas futuras é executado por um
+utilizador interno <code>{ perfil: &#39;sistema&#39; }</code> — o admin não exerce uma operação operacional.</p>
+<p><strong>“O e-mail é real?”</strong>
+Com <code>SMTP_*</code> definido, sim: o <code>AdapterSMTP</code> usa <code>nodemailer</code> e envia pela rede. Sem configuração,
+grava em <code>server/outbox/email</code> para a demonstração continuar offline. Em ambos os casos fica cópia
+em outbox para auditoria.</p>
+<p><strong>“O que acontece se o processo cair a meio de um evento?”</strong>
+O evento é gravado primeiro na tabela <code>eventos</code> (outbox) e só depois distribuído; cada consumo fica
+em <code>evento_consumos</code>. É a base para reprocessamento idempotente.</p>
+<p><strong>“Quantos testes têm?”</strong>
+52, com <code>node:test</code>, em bases temporárias: estados, regras, aprovações, permissões, EDA,
+segurança, API e canais.</p>
+<p><strong>“Onde está a prova de que os padrões funcionam juntos?”</strong>
+No fluxo de marcação: Façade → Strategy (duração) → Chain (RN) → Repository (persistência) →
+EventBus (Observer) → Factory/Adapter (notificação) → Auditoria, com State a controlar transições.</p>
+<hr>
+<h2>10. Problemas comuns</h2>
+<table>
+<thead>
+<tr>
+<th>Sintoma</th>
+<th>Causa provável</th>
+<th>Solução</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>node:sqlite</code> não encontrado</td>
+<td>Node &lt; 24</td>
+<td>instalar Node 24 e reabrir o terminal</td>
+</tr>
+<tr>
+<td><code>EADDRINUSE</code> na 4000/5173</td>
+<td>processo antigo vivo</td>
+<td><code>Get-NetTCPConnection ...</code> e <code>Stop-Process -Id &lt;PID&gt; -Force</code></td>
+</tr>
+<tr>
+<td>Interface abre mas API falha</td>
+<td>só o Vite está a correr</td>
+<td><code>npm run dev</code> (arranca os dois) ou <code>npm start</code> noutro terminal</td>
+</tr>
+<tr>
+<td><code>ExperimentalWarning: SQLite</code></td>
+<td>aviso normal do Node</td>
+<td>ignorar; não é erro</td>
+</tr>
+<tr>
+<td>Dados de demos anteriores</td>
+<td>base alterada</td>
+<td><code>npm run reset</code> (com a API parada)</td>
+</tr>
+<tr>
+<td>E-mail não sai</td>
+<td>SMTP ausente/errado</td>
+<td>verificar <code>SMTP_*</code>; consultar <code>server/outbox/email</code></td>
+</tr>
+<tr>
+<td>Login de médico pendente falha</td>
+<td>comportamento <strong>correto</strong></td>
+<td>aprovar em <code>/secretaria</code></td>
+</tr>
+<tr>
+<td>Login de secretária pendente falha</td>
+<td>comportamento <strong>correto</strong></td>
+<td>aprovar em <code>/admin</code> → <strong>Aprovações</strong></td>
+</tr>
+<tr>
+<td><code>npm test</code> com código 1 mas tudo <code>pass</code></td>
+<td><code>ExperimentalWarning</code> no stderr</td>
+<td>confirmar <code>pass 52 · fail 0</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>11. Checklist final (15 minutos antes)</h2>
+<ul>
+<li><input disabled="" type="checkbox"> <code>node -v</code> mostra <strong>v24</strong></li>
+<li><input disabled="" type="checkbox"> <code>npm run reset</code> executado</li>
+<li><input disabled="" type="checkbox"> <code>npm run dev</code> a correr (API 4000 + Vite 5173)</li>
+<li><input disabled="" type="checkbox"> <a href="http://localhost:4000/api/health">http://localhost:4000/api/health</a> responde <code>ok</code></li>
+<li><input disabled="" type="checkbox"> <a href="http://localhost:5173">http://localhost:5173</a> abre e mostra médicos das 8 cidades</li>
+<li><input disabled="" type="checkbox"> Login admin e secretária testados</li>
+<li><input disabled="" type="checkbox"> Link <code>confirmar-consulta?id=6&amp;token=demo-consulta-pendente</code> aberto uma vez (<strong>não confirmar</strong>
+antes da defesa)</li>
+<li><input disabled="" type="checkbox"> <code>server/outbox/email</code> aberto no Explorador</li>
+<li><input disabled="" type="checkbox"> Aba do <strong>Architecture Lab</strong> pronta (caso RN-03)</li>
+<li><input disabled="" type="checkbox"> <code>docs/GUIA-DEFESA.md</code> e <code>docs/ARQUITETURA.md</code> abertos</li>
+<li><input disabled="" type="checkbox"> Modo escuro testado</li>
+<li><input disabled="" type="checkbox"> Plano B: se o SMTP real falhar, demonstrar a outbox</li>
+</ul>
+<hr>
+<h2>12. Referências rápidas</h2>
+<table>
+<thead>
+<tr>
+<th>Documento</th>
+<th>Conteúdo</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>README.md</code></td>
+<td>visão geral, arranque, funcionalidades, padrões, testes</td>
+</tr>
+<tr>
+<td><code>docs/ARQUITETURA.md</code></td>
+<td>decisões, diagramas, camadas, rastreabilidade</td>
+</tr>
+<tr>
+<td><code>docs/API.md</code></td>
+<td>endpoints, códigos de erro e exemplos</td>
+</tr>
+<tr>
+<td><code>docs/GUIA-DEFESA.md</code></td>
+<td>este documento</td>
+</tr>
+<tr>
+<td><code>/arquitetura</code> (admin)</td>
+<td>padrões, simulador, Event Monitor, comparação</td>
+</tr>
+<tr>
+<td><code>/auditoria</code> (admin)</td>
+<td>registo de operações críticas</td>
+</tr>
+</tbody></table>
+
+</main>
+
+</body>
+</html>

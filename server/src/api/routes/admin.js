@@ -40,8 +40,24 @@ adminRouter.get('/validacoes', (req, res) => {
 });
 
 adminRouter.get('/utilizadores', (req, res) => {
-  res.json(repositorios.utilizadores.listar({ perfil: req.query.perfil }));
+  res.json(repositorios.utilizadores.listar({
+    perfil: req.query.perfil,
+    estadoAprovacao: req.query.estadoAprovacao
+  }));
 });
+
+// --- Aprovação de contas (secretárias e médicos) ---------------------------
+adminRouter.get('/aprovacoes', (req, res) => {
+  res.json(servicos.authService.listarPendentes(req.utilizador));
+});
+
+adminRouter.post('/utilizadores/:id/aprovar', assincrono(async (req, res) => {
+  res.json(await servicos.authService.aprovar(req.params.id, req.utilizador));
+}));
+
+adminRouter.post('/utilizadores/:id/recusar', assincrono(async (req, res) => {
+  res.json(await servicos.authService.recusar(req.params.id, req.utilizador, req.body?.motivo ?? null));
+}));
 
 adminRouter.get('/notificacoes', (req, res) => {
   res.json(repositorios.notificacoes.listarTodas({ limite: Number(req.query.limite) || 100 }));
@@ -80,9 +96,10 @@ adminRouter.post('/medicos', assincrono(async (req, res) => {
   }
   const resultado = await servicos.authService.registar({
     nome, email, password: password || 'MediAgenda123', perfil: 'medico',
-    telefone, numeroRegisto, localizacao, especialidades
+    telefone, numeroRegisto, localizacao, especialidades,
+    aprovadoPor: req.utilizador
   });
-  res.status(201).json({ ...resultado, mensagem: 'Médico registado. Palavra-passe inicial: ' + (password || 'MediAgenda123') });
+  res.status(201).json({ ...resultado, mensagem: 'Médico registado e aprovado. Palavra-passe inicial: ' + (password || 'MediAgenda123') });
 }));
 
 adminRouter.patch('/medicos/:id/desativar', assincrono(async (req, res) => {

@@ -15,12 +15,16 @@ CREATE TABLE IF NOT EXISTS users (
   telefone TEXT,
   ativo INTEGER NOT NULL DEFAULT 1,
   email_confirmado INTEGER NOT NULL DEFAULT 0,
+  estado_aprovacao TEXT NOT NULL DEFAULT 'aprovada'
+    CHECK (estado_aprovacao IN ('pendente', 'aprovada', 'recusada')),
+  aprovado_em TEXT,
+  aprovado_por INTEGER REFERENCES users(id),
   token_confirmacao TEXT,
   token_recuperacao TEXT,
   tentativas_falhadas INTEGER NOT NULL DEFAULT 0,
   bloqueado_ate TEXT,
   preferencia_notificacao TEXT NOT NULL DEFAULT 'email'
-    CHECK (preferencia_notificacao IN ('email', 'sms', 'ambos')),
+    CHECK (preferencia_notificacao IN ('email', 'sms', 'whatsapp', 'ambos')),
   criado_em TEXT NOT NULL
 );
 
@@ -88,6 +92,7 @@ CREATE TABLE IF NOT EXISTS consultas (
   cancelamento_tardio INTEGER NOT NULL DEFAULT 0,
   confirmada_em TEXT,
   prazo_confirmacao TEXT NOT NULL,
+  token_confirmacao TEXT,
   criada_em TEXT NOT NULL,
   atualizada_em TEXT NOT NULL,
   criada_por INTEGER REFERENCES users(id)

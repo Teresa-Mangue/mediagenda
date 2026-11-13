@@ -1,4 +1,5 @@
 import { ErroNaoEncontrado, ErroProibido, ErroNegocio, ErroValidacao } from '../utils/erros.js';
+import { tokenAleatorio } from '../utils/security.js';
 import { CancelarConsultaCommand, ReagendarConsultaCommand } from '../commands/consultaCommands.js';
 
 /**
@@ -49,6 +50,7 @@ export class AgendamentoFacade {
     }
 
     const prazoConfirmacao = new Date(Date.now() + this.configuracao.numero('confirmacao_prazo_horas') * 60 * 60 * 1000);
+    const tokenConfirmacao = tokenAleatorio();
     const consultaId = this.consultaRepository.criar({
       pacienteId: paciente.id,
       medicoId: medico.id,
@@ -57,6 +59,7 @@ export class AgendamentoFacade {
       duracaoMin,
       estado: 'pendente',
       prazoConfirmacao: prazoConfirmacao.toISOString(),
+      tokenConfirmacao,
       criadaPor: utilizador.id
     });
     this.consultaRepository.registarHistorico(

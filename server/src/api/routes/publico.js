@@ -1,9 +1,25 @@
 import { Router } from 'express';
+import { assincrono } from '../middleware.js';
 import { servicos, repositorios } from '../../container.js';
 import { chaveData } from '../../utils/tempo.js';
 import { ErroValidacao } from '../../utils/erros.js';
 
 export const publicoRouter = Router();
+
+/** Sedes activas: uma por cidade onde exista pelo menos um médico. */
+function sedesAtivas() {
+  const mapa = new Map();
+  for (const medico of repositorios.medicos.listar()) {
+    const localizacao = medico.localizacao || 'Clínica MediAgenda';
+    const cidade = localizacao.includes('—')
+      ? localizacao.split('—').pop().trim()
+      : localizacao.replace(/Clínica MediAgenda/i, '').trim() || localizacao;
+    const registo = mapa.get(cidade) || { cidade, medicos: 0, localizacao };
+    registo.medicos += 1;
+    mapa.set(cidade, registo);
+  }
+  return [...mapa.values()].sort((a, b) => a.cidade.localeCompare(b.cidade));
+}
 
 publicoRouter.get('/clinica', (req, res) => {
   const c = servicos.configuracao;
@@ -16,9 +32,25 @@ publicoRouter.get('/clinica', (req, res) => {
     cancelamentoLimiteHoras: c.numero('cancelamento_limite_horas'),
     confirmacaoPrazoHoras: c.numero('confirmacao_prazo_horas'),
     maxConsultasDia: c.numero('max_consultas_dia'),
-    maxConsultasPacienteMedico: c.numero('max_consultas_paciente_medico')
+    maxConsultasPacienteMedico: c.numero('max_consultas_paciente_medico'),
+    sedes: sedesAtivas()
   });
 });
+
+/** Link de confirmação enviado por e-mail: pré-visualização sem sessão. */
+publicoRouter.get('/confirmar-consulta', (req, res) => {
+  const { id, token } = req.query;
+  if (!id || !token) throw new ErroValidacao('Link incompleto: indique id e token.');
+  res.json(servicos.consultaService.obterPorLink(id, token));
+});
+
+/** Link de confirmação enviado por e-mail: confirma a marcação. */
+publicoRouter.post('/confirmar-consulta', assincrono(async (req, res) => {
+  const { id, token } = req.body || {};
+  if (!id || !token) throw new ErroValidacao('Link incompleto: indique id e token.');
+  const consulta = await servicos.consultaService.confirmarPorLink(id, token);
+  res.json({ mensagem: 'Consulta confirmada com sucesso.', consulta });
+}));
 
 publicoRouter.get('/especialidades', (req, res) => {
   res.json(repositorios.especialidades.listar({ apenasAtivas: true }));

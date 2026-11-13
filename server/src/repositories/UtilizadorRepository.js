@@ -7,28 +7,40 @@ export class UtilizadorRepository {
 
   porId(id) {
     return db.prepare(`
-      SELECT id, nome, email, perfil, telefone, ativo, email_confirmado,
+      SELECT id, nome, email, perfil, telefone, ativo, email_confirmado, estado_aprovacao,
              preferencia_notificacao, criado_em
       FROM users WHERE id = ?
     `).get(Number(id)) || null;
   }
 
-  criar({ nome, email, passwordHash, perfil, telefone, emailConfirmado = 0, tokenConfirmacao = null, preferenciaNotificacao = 'email' }) {
+  /** Registo completo (inclui hash e tokens) — uso interno dos serviços. */
+  porIdCompleto(id) {
+    return db.prepare('SELECT * FROM users WHERE id = ?').get(Number(id)) || null;
+  }
+
+  criar({
+    nome, email, passwordHash, perfil, telefone, emailConfirmado = 0,
+    tokenConfirmacao = null, preferenciaNotificacao = 'email',
+    estadoAprovacao = 'aprovada', ativo = null, aprovadoPor = null, aprovadoEm = null
+  }) {
     const resultado = db.prepare(`
       INSERT INTO users
-        (nome, email, password_hash, perfil, telefone, email_confirmado,
-         token_confirmacao, preferencia_notificacao, criado_em)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (nome, email, password_hash, perfil, telefone, ativo, email_confirmado, estado_aprovacao,
+         aprovado_em, aprovado_por, token_confirmacao, preferencia_notificacao, criado_em)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       nome, String(email).toLowerCase().trim(), passwordHash, perfil, telefone ?? null,
-      emailConfirmado ? 1 : 0, tokenConfirmacao, preferenciaNotificacao, nowIso()
+      ativo === null ? (estadoAprovacao === 'aprovada' ? 1 : 0) : (ativo ? 1 : 0),
+      emailConfirmado ? 1 : 0, estadoAprovacao, aprovadoEm, aprovadoPor,
+      tokenConfirmacao, preferenciaNotificacao, nowIso()
     );
     return Number(resultado.lastInsertRowid);
   }
 
   atualizar(id, campos) {
     const permitidos = [
-      'nome', 'telefone', 'ativo', 'email_confirmado', 'token_confirmacao',
+      'nome', 'telefone', 'ativo', 'email_confirmado', 'estado_aprovacao',
+      'aprovado_em', 'aprovado_por', 'token_confirmacao',
       'token_recuperacao', 'preferencia_notificacao', 'password_hash',
       'tentativas_falhadas', 'bloqueado_ate'
     ];
@@ -52,11 +64,15 @@ export class UtilizadorRepository {
     return db.prepare('SELECT * FROM users WHERE token_recuperacao = ?').get(token) || null;
   }
 
-  listar({ perfil } = {}) {
-    let sql = `SELECT id, nome, email, perfil, telefone, ativo, email_confirmado, preferencia_notificacao, criado_em
+  listar({ perfil, estadoAprovacao } = {}) {
+    let sql = `SELECT id, nome, email, perfil, telefone, ativo, email_confirmado, estado_aprovacao,
+                      aprovado_em, preferencia_notificacao, criado_em
                FROM users`;
+    const condicoes = [];
     const params = [];
-    if (perfil) { sql += ' WHERE perfil = ?'; params.push(perfil); }
+    if (perfil) { condicoes.push('perfil = ?'); params.push(perfil); }
+    if (estadoAprovacao) { condicoes.push('estado_aprovacao = ?'); params.push(estadoAprovacao); }
+    if (condicoes.length) sql += ` WHERE ${condicoes.join(' AND ')}`;
     sql += ' ORDER BY nome';
     return db.prepare(sql).all(...params);
   }

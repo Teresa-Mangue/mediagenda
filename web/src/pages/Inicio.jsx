@@ -90,8 +90,8 @@ export function Inicio() {
         <span className="pill">● {clinica?.diasFuncionamento?.length || 5} dias por semana · {clinica?.horarioInicio}–{clinica?.horarioFim}</span>
         <h1>Encontre o especialista certo, à hora certa.</h1>
         <p>
-          Pesquise por especialidade, médico ou clínica. Cada marcação é validada automaticamente
-          (RN-01 a RN-09) e recebe notificações por e-mail ou SMS.
+          Pesquise por especialidade, médico ou clínica em todo o país. Cada marcação é validada
+          automaticamente (RN-01 a RN-09) e recebe notificações por e-mail, SMS ou WhatsApp.
         </p>
         <div className="row wrap">
           <Link className="btn" to="/consultas">
@@ -151,6 +151,33 @@ export function Inicio() {
                 </div>
                 <span className={`badge ${consulta.estado}`}>{consulta.estado}</span>
               </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {clinica?.sedes?.length > 0 && (
+        <section className="mt">
+          <div className="row between wrap mt">
+            <div>
+              <h2>Onde estamos</h2>
+              <p>A rede MediAgenda está presente nas principais cidades de Moçambique.</p>
+            </div>
+            <span className="badge info">{clinica.sedes.length} cidades</span>
+          </div>
+          <div className="grid auto mt-sm">
+            {clinica.sedes.map((sede) => (
+              <article key={sede.cidade} className="card pad-sm">
+                <div className="badge info">{sede.medicos} médico(s)</div>
+                <h3 className="mt-sm" style={{ marginBottom: 2 }}>{sede.cidade}</h3>
+                <p className="tiny muted" style={{ margin: 0 }}>Clínica MediAgenda — {sede.cidade}</p>
+                <button className="btn ghost sm mt" onClick={() => {
+                  setFiltros((f) => ({ ...f, localizacao: sede.localizacao }));
+                  carregarMedicos({ ...filtros, localizacao: sede.localizacao });
+                }}>
+                  Ver médicos
+                </button>
+              </article>
             ))}
           </div>
         </section>

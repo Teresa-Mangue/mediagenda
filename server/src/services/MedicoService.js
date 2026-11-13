@@ -142,16 +142,26 @@ export class MedicoService {
     const medico = this.detalhe(medicoId);
     const futuras = this.consultaRepository.confirmadasFuturas(medicoId);
     const canceladas = [];
+    // O administrador não tem permissão operacional para cancelar consultas;
+    // a RN-08 é executada pelo próprio sistema, não por uma pessoa.
+    const sistema = { id: null, nome: 'Sistema MediAgenda', perfil: 'sistema' };
     for (const consulta of futuras) {
       const resultado = await this.agendamentoFacade.cancelar({
-        utilizador: utilizadorAdmin,
+        utilizador: sistema,
         consultaId: consulta.id,
         motivo: 'Médico desactivado — consultas canceladas automaticamente (RN-08)'
       });
       canceladas.push(resultado.consulta.id);
     }
-    this.medicoRepository.atualizar(medicoId, { ativo: 0 });
+    this.medicoRepository.definirAtivo(medicoId, 0);
     this.utilizadorRepository.atualizar(medico.utilizador_id, { ativo: 0 });
+    this.auditoriaService?.registar?.({
+      utilizadorId: utilizadorAdmin?.id ?? null,
+      acao: 'MEDICO_DESATIVADO_SISTEMA',
+      entidade: 'medico',
+      entidadeId: Number(medicoId),
+      detalhes: { consultasCanceladas: canceladas.length, origem: 'RN-08' }
+    });
     return { medicoId, consultasCanceladas: canceladas.length, ids: canceladas };
   }
 }

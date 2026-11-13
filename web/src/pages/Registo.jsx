@@ -83,7 +83,11 @@ export function Registo() {
               </div>
             </div>
             <h1 style={{ marginTop: 40 }}>Conta criada.</h1>
-            <p>Falta apenas confirmar o e-mail para activar todas as funcionalidades da conta.</p>
+            <p>
+              {criado.estadoAprovacao === 'pendente'
+                ? 'Falta a aprovação da equipa e a confirmação do e-mail para activar a conta.'
+                : 'Confirme o e-mail para activar todas as funcionalidades da conta.'}
+            </p>
           </div>
           <p style={{ fontSize: '.78rem', opacity: .7 }}>Protótipo académico — dados de demonstração.</p>
         </section>
@@ -92,13 +96,18 @@ export function Registo() {
             <div className="alert success">
               <b>Bem-vindo, {criado.utilizador?.nome}.</b>
               <p style={{ margin: '6px 0 0' }}>
-                O token de confirmação foi enviado para a outbox simulada.
+                {criado.estadoAprovacao === 'pendente'
+                  ? `O cadastro de ${criado.utilizador?.perfil} está pendente de aprovação. `
+                    + `Receberá uma mensagem quando for autorizado.`
+                  : 'O link de confirmação foi enviado para o seu e-mail.'}
               </p>
             </div>
-            <div className="card mt" style={{ boxShadow: 'none', background: 'var(--surface-2)' }}>
-              <div className="tiny muted">Token de confirmação (demonstração)</div>
-              <code style={{ wordBreak: 'break-all' }}>{criado.tokenConfirmacao}</code>
-            </div>
+            {criado.linkConfirmacao && (
+              <div className="card mt" style={{ boxShadow: 'none', background: 'var(--surface-2)' }}>
+                <div className="tiny muted">Link de confirmação de e-mail (demonstração)</div>
+                <Link to={criado.linkConfirmacao} style={{ wordBreak: 'break-all' }}>{criado.linkConfirmacao}</Link>
+              </div>
+            )}
             {erro && <div className="alert error mt">{erro}</div>}
             {confirmado ? (
               <div className="stack mt">
@@ -108,7 +117,7 @@ export function Registo() {
             ) : (
               <div className="row mt">
                 <button className="btn primary grow" onClick={confirmar}>Confirmar e-mail</button>
-                <Link className="btn ghost" to="/login">Entrar sem confirmar</Link>
+                <Link className="btn ghost" to="/login">Ir para o login</Link>
               </div>
             )}
           </div>
@@ -181,6 +190,19 @@ export function Registo() {
                 <option value="secretario">Secretaria</option>
               </select>
             </Campo>
+
+            {form.perfil === 'medico' && (
+              <div className="alert info">
+                <b>Aprovação necessária.</b> O cadastro de médico fica <b>pendente</b> até a
+                secretária confirmar. Só depois é que as credenciais entram em vigor.
+              </div>
+            )}
+            {form.perfil === 'secretario' && (
+              <div className="alert warn">
+                <b>Autorização do administrador.</b> O cadastro de secretária fica <b>pendente</b>
+                até o administrador autorizar. Só depois é que as credenciais entram em vigor.
+              </div>
+            )}
 
             {form.perfil === 'paciente' && (
               <div className="grid c2">

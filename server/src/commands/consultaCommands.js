@@ -1,4 +1,5 @@
 import { criarEstado } from '../domain/consulta/estados.js';
+import { tokenAleatorio } from '../utils/security.js';
 import { ErroNaoEncontrado, ErroProibido, ErroNegocio } from '../utils/erros.js';
 
 /**
@@ -36,8 +37,14 @@ export class CancelarConsultaCommand extends Command {
 
     const dono = consulta.paciente_utilizador_id === utilizador.id;
     const medicoDono = consulta.medico_utilizador_id === utilizador.id;
+    if (utilizador.perfil === 'admin') {
+      throw new ErroProibido('O administrador não pode cancelar consultas. Use a secretaria ou o médico responsável.');
+    }
     if (utilizador.perfil === 'paciente' && !dono) throw new ErroProibido();
     if (utilizador.perfil === 'medico' && !medicoDono) throw new ErroProibido();
+    if (!['paciente', 'medico', 'secretario', 'sistema'].includes(utilizador.perfil)) {
+      throw new ErroProibido();
+    }
 
     const estado = criarEstado(consulta.estado);
     const transicao = estado.cancelar(consulta, {
@@ -54,7 +61,7 @@ export class CancelarConsultaCommand extends Command {
     consultaRepository.registarHistorico(
       consulta.id, consulta.estado, transicao.estado, transicao.motivo, utilizador.id
     );
-    if (transicao.cancelamento_tardio) {
+    if (transicao.cancelamento_tardio && utilizador.perfil === 'paciente') {
       pacienteRepository.incrementarCancelamentoTardio(consulta.paciente_id);
     }
 
@@ -97,10 +104,16 @@ export class ReagendarConsultaCommand extends Command {
 
     const consulta = consultaRepository.porId(consultaId);
     if (!consulta) throw new ErroNaoEncontrado('Consulta não encontrada.');
+    if (utilizador.perfil === 'admin') {
+      throw new ErroProibido('O administrador não pode reagendar consultas. Use a secretaria ou o médico responsável.');
+    }
     if (utilizador.perfil === 'paciente' && consulta.paciente_utilizador_id !== utilizador.id) {
       throw new ErroProibido();
     }
     if (utilizador.perfil === 'medico' && consulta.medico_utilizador_id !== utilizador.id) {
+      throw new ErroProibido();
+    }
+    if (!['paciente', 'medico', 'secretario'].includes(utilizador.perfil)) {
       throw new ErroProibido();
     }
     if (['realizada', 'cancelada'].includes(consulta.estado)) {
@@ -140,7 +153,8 @@ export class ReagendarConsultaCommand extends Command {
       duracao_min: duracaoMin,
       estado: 'pendente',
       confirmada_em: null,
-      prazo_confirmacao: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()
+      prazo_confirmacao: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+      token_confirmacao: tokenAleatorio()
     });
     consultaRepository.registarHistorico(
       consulta.id, consulta.estado, 'pendente',

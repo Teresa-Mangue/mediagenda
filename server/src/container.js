@@ -18,7 +18,7 @@ import { MedicoService } from './services/MedicoService.js';
 import { AgendamentoFacade } from './services/AgendamentoFacade.js';
 import { CadeiaValidacao } from './domain/validacao/cadeia.js';
 import { NotificacaoFactory } from './domain/notificacao/factory.js';
-import { AdapterSMTP, AdapterSMS } from './domain/notificacao/canais.js';
+import { AdapterSMTP, AdapterSMS, AdapterWhatsApp } from './domain/notificacao/canais.js';
 import { EstrategiaDuracaoConsulta } from './domain/notificacao/estrategias.js';
 import { configuracao } from './config/ConfiguracaoSistema.js';
 
@@ -47,7 +47,8 @@ export const notificacaoService = new NotificacaoService({
   notificacaoRepository: repositorios.notificacoes,
   factory: new NotificacaoFactory({
     emailAdapter: new AdapterSMTP(),
-    smsAdapter: new AdapterSMS()
+    smsAdapter: new AdapterSMS(),
+    whatsappAdapter: new AdapterWhatsApp()
   })
 });
 
@@ -64,6 +65,7 @@ export const authService = new AuthService({
   utilizadorRepository: repositorios.utilizadores,
   pacienteRepository: repositorios.pacientes,
   medicoRepository: repositorios.medicos,
+  especialidadeRepository: repositorios.especialidades,
   auditoriaService,
   notificacaoService
 });

@@ -1,4 +1,4 @@
-import { IEnviadorEmail, IEnviadorSMS } from './canais.js';
+import { IEnviadorEmail, IEnviadorSMS, IEnviadorWhatsApp } from './canais.js';
 
 class Notificacao {
   constructor(canal) {
@@ -24,6 +24,20 @@ export class EmailNotificacao extends Notificacao {
   }
 }
 
+export class WhatsAppNotificacao extends Notificacao {
+  constructor(enviadorWhatsApp) {
+    super('whatsapp');
+    if (!(enviadorWhatsApp instanceof IEnviadorWhatsApp)) {
+      throw new Error('WhatsAppNotificacao exige um IEnviadorWhatsApp.');
+    }
+    this.enviador = enviadorWhatsApp;
+  }
+
+  async enviar({ para, assunto, corpo }) {
+    return this.enviador.enviarWhatsApp({ para, mensagem: `${assunto}\n${corpo}` });
+  }
+}
+
 export class SMSNotificacao extends Notificacao {
   constructor(enviadorSMS) {
     super('sms');
@@ -45,15 +59,21 @@ export class SMSNotificacao extends Notificacao {
 export class NotificacaoFactory {
   #email;
   #sms;
+  #whatsapp;
 
-  constructor({ emailAdapter, smsAdapter }) {
+  constructor({ emailAdapter, smsAdapter, whatsappAdapter = null }) {
     this.#email = emailAdapter;
     this.#sms = smsAdapter;
+    this.#whatsapp = whatsappAdapter;
   }
 
   criar(tipo) {
     if (tipo === 'email') return new EmailNotificacao(this.#email);
     if (tipo === 'sms') return new SMSNotificacao(this.#sms);
+    if (tipo === 'whatsapp') {
+      if (!this.#whatsapp) throw new Error('Canal WhatsApp não configurado.');
+      return new WhatsAppNotificacao(this.#whatsapp);
+    }
     throw new Error(`Tipo de notificação desconhecido: ${tipo}`);
   }
 }

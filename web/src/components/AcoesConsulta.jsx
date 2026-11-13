@@ -56,10 +56,14 @@ export function AcoesConsulta({ consulta, onAtualizar, detalhado = false }) {
     'Avaliação registada. Obrigado!'
   );
 
-  const podeConfirmar = consulta.estado === 'pendente';
-  const podeCancelar = ['pendente', 'confirmada'].includes(consulta.estado);
-  const podeReagendar = ['pendente', 'confirmada'].includes(consulta.estado);
-  const podeRealizar = consulta.estado === 'confirmada' && perfil !== 'paciente';
+  // Permissões pedidas para a defesa:
+  //  - confirmar a marcação: paciente, médico responsável e secretária;
+  //  - marcar como realizada: apenas médico responsável e secretária;
+  //  - cancelar/reagendar: paciente, médico e secretária — NUNCA o admin.
+  const podeConfirmar = consulta.estado === 'pendente' && perfil !== 'admin';
+  const podeCancelar = ['pendente', 'confirmada'].includes(consulta.estado) && perfil !== 'admin';
+  const podeReagendar = ['pendente', 'confirmada'].includes(consulta.estado) && perfil !== 'admin';
+  const podeRealizar = consulta.estado === 'confirmada' && ['medico', 'secretario'].includes(perfil);
   const podeAvaliar = consulta.estado === 'realizada' && perfil === 'paciente' && !consulta.avaliacao_pontuacao;
 
   return (
@@ -81,7 +85,11 @@ export function AcoesConsulta({ consulta, onAtualizar, detalhado = false }) {
           <button className="btn danger sm" onClick={() => setModal('cancelar')}>✕ Cancelar</button>
         )}
         {!podeConfirmar && !podeReagendar && !podeRealizar && !podeAvaliar && !podeCancelar && (
-          <span className="tiny muted">Sem ações disponíveis neste estado.</span>
+          <span className="tiny muted">
+            {perfil === 'admin'
+              ? 'O administrador tem acesso de leitura. Confirmar, cancelar e reagendar são operações da secretaria e do médico.'
+              : 'Sem ações disponíveis neste estado.'}
+          </span>
         )}
       </div>
 
