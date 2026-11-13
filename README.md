@@ -320,6 +320,8 @@ scripts/setup.js          instalação inicial
 
 ## 10. Deploy
 
+Aplicação publicada em **<https://mediagenda-0za9.onrender.com>** (Render, plano Free).
+
 O guia para Render (incluindo limitações do plano gratuito e persistência do SQLite) está em
 [DEPLOY.md](DEPLOY.md).
 

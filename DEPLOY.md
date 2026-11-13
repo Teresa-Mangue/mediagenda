@@ -16,14 +16,13 @@ git push
 
 Se o Render estiver ligado ao repositório, cada `push` para `main` faz **deploy automático**.
 
-## 2. Render (via Blueprint)
+## 2. Render
 
-O ficheiro [`render.yaml`](render.yaml) já descreve o serviço.
+O serviço **já está criado e publicado** em <https://mediagenda-0za9.onrender.com>.
+Não é preciso criar outro: um Blueprint com o mesmo nome (`mediagenda`) seria rejeitado
+por conflito de nome. O [`render.yaml`](render.yaml) fica como referência da configuração.
 
-1. Entra em <https://dashboard.render.com> e escolhe **New +** → **Blueprint**
-2. Liga a conta GitHub e autoriza o acesso ao repositório `mediagenda`
-3. Seleciona o repositório — o Render lê o `render.yaml` automaticamente
-4. Clica **Apply** / **Deploy**
+Fluxo normal: `git push` para `main` → o Render reconstrói e publica automaticamente.
 
 Configuração aplicada:
 
@@ -31,19 +30,14 @@ Configuração aplicada:
 | ----------------- | --------------------- |
 | Runtime           | Node                  |
 | Plano             | Free                  |
-| Região            | Frankfurt             |
+| Região            | Oregon                |
 | Build command     | `npm ci --include=dev && npm run build` |
 | Start command     | `npm start`           |
 | Health check      | `/api/health`         |
 | Node              | 24.14.0               |
 
-O URL final fica no formato `https://mediagenda.onrender.com`.
-
-## 3. Alternativa: criar o serviço à mão
-
-Se preferires não usar o Blueprint: **New +** → **Web Service** → escolhe o repositório e
-preenche os mesmos valores da tabela acima, adicionando as variáveis de ambiente
-`NODE_VERSION=24.14.0` e `NODE_ENV=production`.
+Para recriar noutra conta/região: **New +** → **Blueprint** → escolhe o repositório →
+**Apply**. Aí o URL será diferente.
 
 ## 4. Limitações do plano Free
 
@@ -71,7 +65,7 @@ acesso a dados (`server/src/repositories`), que hoje usa SQLite.
 ## 5. Verificação pós-deploy
 
 ```bash
-curl https://SEU-APP.onrender.com/api/health
+curl https://mediagenda-0za9.onrender.com/api/health
 # {"ok":true,"servico":"MediAgenda API","hora":"..."}
 ```
 
