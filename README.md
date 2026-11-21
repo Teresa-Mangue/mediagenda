@@ -10,8 +10,7 @@ de **padrões de arquitectura e de desenho** (EDA, State, Chain of Responsibilit
 Factory Method, Adapter, Façade, Command, Singleton, Repository, ISP) e dos princípios **SOLID** e
 **DRY**.
 
-> Documentação detalhada: [docs/ARQUITETURA.md](docs/ARQUITETURA.md) · [docs/API.md](docs/API.md) ·
-> [docs/GUIA-DEFESA.md](docs/GUIA-DEFESA.md) · [DEPLOY.md](DEPLOY.md)
+> > Documentação detalhada: [docs/ARQUITETURA.md](docs/ARQUITETURA.md) · [docs/API.md](docs/API.md) · [DEPLOY.md](DEPLOY.md)
 
 ---
 
